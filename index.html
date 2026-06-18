@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>구역노트 — 우리 구역 모임 기록</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F7F4EC; --bg2:#FBF9F3; --card:#FFFFFF; --ink:#26231C; --ink2:#564E41; --soft:#827963; --line:#E6DFD2;
+  --accent:#2E4374; --accent-d:#1E2E54; --accent-soft:#E1E6F0;
+  --ok:#4E6143; --ok-bg:#E4EBDC; --lead:#795B2D; --lead-bg:#F0E7D6; --priv:#776E5D; --priv-bg:#EBE6DC; --warn:#9C4E39;
+}
+html,body{ font-family:'Pretendard',-apple-system,system-ui,sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; letter-spacing:-.1px; }
+.serif{ font-family:inherit; }
+[data-theme="dark"]{
+  --bg:#1E1C18; --bg2:#262420; --card:#2C2A25; --ink:#F1ECE2; --ink2:#C6BFB0; --soft:#9E9583; --line:#3F3C34;
+  --accent:#889ED2; --accent-d:#9DB0DC; --accent-soft:#2A3147;
+  --ok:#9DB088; --ok-bg:#2B3326; --lead:#D4AE6E; --lead-bg:#3A3120; --priv:#B3A996; --priv-bg:#302D26; --warn:#DA876D;
+}
+[data-theme="dark"] .btn-main, [data-theme="dark"] .add-btn:not(.ghost), [data-theme="dark"] .sheet-actions .save{ color:#1E1C18; }
+[data-theme="dark"] .badge.super{ background:var(--accent); color:#1E1C18; }
+.theme-btn{ background:none; border:none; font-size:15px; cursor:pointer; padding:4px 6px; border-radius:8px; line-height:1; }
+.theme-btn:hover{ background:var(--line); }
+button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+@media(prefers-reduced-motion:reduce){ *{ transition:none!important; } }
+
+/* ===== 로그인 ===== */
+.login{ min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 24px; text-align:center; background:var(--bg); }
+.login-card{ width:100%; max-width:360px; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:48px 30px 30px; position:relative; margin-top:34px; }
+.emblem{ position:absolute; top:-30px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:18px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:26px; border:3px solid var(--card); }
+.logo{ font-size:25px; font-weight:800; letter-spacing:-1px; color:var(--ink); }
+.logo .leaf{ color:var(--accent); }
+.login .tag{ color:var(--soft); font-size:13px; margin-top:8px; margin-bottom:28px; }
+.field{ text-align:left; margin-bottom:14px; }
+.field label{ font-size:12.5px; font-weight:700; color:var(--soft); display:block; margin-bottom:7px; text-transform:uppercase; letter-spacing:.6px; }
+.field input{ width:100%; border:1px solid var(--line); border-radius:11px; padding:14px 15px; font-family:inherit; font-size:16.5px; outline:none; background:var(--bg2); color:var(--ink); transition:border-color .15s, background .15s; }
+.field input:focus{ border-color:var(--accent); background:var(--card); }
+.btn-main{ width:100%; border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:17px; font-weight:700; padding:15px; border-radius:11px; cursor:pointer; margin-top:8px; transition:background .15s; }
+.btn-main:hover{ background:var(--accent-d); }
+.login .err{ color:var(--warn); font-size:12.5px; margin-top:11px; min-height:16px; font-weight:600; }
+.demo-accts{ font-size:11.5px; color:var(--soft); margin-top:18px; max-width:360px; line-height:1.9; border:1px solid var(--line); border-radius:13px; padding:13px 15px; text-align:left; background:var(--bg2); }
+.demo-accts b{ color:var(--ink2); }
+.demo-accts code{ background:var(--accent-soft); padding:1px 6px; border-radius:5px; font-size:11px; color:var(--accent-d); }
+.login-help{ font-size:12.5px; color:var(--soft); margin-top:18px; }
+.pos-badge{ font-size:11px; color:var(--accent-d); font-weight:700; background:var(--accent-soft); padding:1px 7px; border-radius:999px; margin-left:5px; }
+
+/* ===== 레이아웃 ===== */
+.app{ min-height:100vh; background:var(--bg); padding-bottom:76px; }
+.topbar{ position:sticky; top:0; z-index:20; background:var(--bg); border-bottom:1px solid var(--line); }
+.hdr{ padding:16px 22px; }
+.hdr-in{ width:100%; max-width:920px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
+.hdr .group{ display:flex; align-items:center; }
+.hdr .group .gwrap{ display:flex; flex-direction:column; }
+.hdr #groupName{ font-size:21px; font-weight:800; letter-spacing:-.5px; color:var(--ink); }
+.hdr .group small{ font-size:10.5px; font-weight:700; color:var(--accent); letter-spacing:.4px; margin-top:3px; text-transform:uppercase; }
+.hdr .edit-g{ background:none; border:none; color:var(--soft); font-size:12px; padding:3px 6px; border-radius:7px; cursor:pointer; margin-left:6px; }
+.hdr .edit-g:hover{ color:var(--accent); }
+.hdr .me{ display:flex; align-items:center; gap:9px; }
+.hdr .me .nm{ font-size:14.5px; font-weight:600; color:var(--ink2); }
+.hdr .me .badge{ font-size:9.5px; font-weight:800; padding:3px 9px; border-radius:999px; letter-spacing:.3px; }
+.badge.leader{ background:var(--accent-soft); color:var(--accent-d); } .badge.super{ background:var(--ink); color:#fff; } .badge.member{ background:var(--line); color:var(--ink2); }
+.hdr .out{ background:none; border:none; color:var(--soft); font-size:13.5px; font-weight:600; padding:6px 8px; border-radius:8px; cursor:pointer; }
+.hdr .out:hover{ color:var(--ink); }
+
+/* PC 상단 네비 */
+.topnav{ display:none; max-width:920px; margin:0 auto; gap:4px; padding:0 16px; }
+.topnav button{ border:none; background:none; font-family:inherit; font-size:15px; font-weight:600; color:var(--soft); cursor:pointer; padding:15px 18px; border-bottom:2px solid transparent; display:flex; align-items:center; gap:7px; white-space:nowrap; transition:color .12s; }
+.topnav button:hover{ color:var(--ink); }
+.topnav button.on{ color:var(--accent-d); border-bottom-color:var(--accent); font-weight:700; }
+.topnav .ic{ font-size:17px; }
+
+/* 모바일 하단 탭바 */
+.tabbar{ position:fixed; bottom:0; left:0; right:0; z-index:30; background:var(--bg2); border-top:1px solid var(--line); display:flex; padding-bottom:env(safe-area-inset-bottom); }
+.tabbar button{ flex:1; border:none; background:none; padding:11px 0 13px; font-family:inherit; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:5px; color:var(--soft); transition:color .12s; }
+.tabbar button .ic{ font-size:25px; line-height:1; }
+.tabbar button .tb-l{ font-size:12px; font-weight:600; }
+.tabbar button.on{ color:var(--accent-d); }
+.tabbar button.on .tb-l{ font-weight:700; }
+
+.scr{ max-width:640px; margin:0 auto; padding:26px 22px 40px; overflow-wrap:anywhere; }
+
+.welcome{ padding:6px 2px 20px; border-bottom:1px solid var(--line); margin-bottom:24px; }
+.welcome .greet{ font-size:26px; font-weight:800; color:var(--ink); letter-spacing:-.6px; }
+.welcome .wsub{ font-size:14.5px; color:var(--soft); margin-top:8px; }
+
+.sec-t{ font-size:21px; font-weight:800; letter-spacing:-.5px; color:var(--ink); margin:8px 0 16px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.add-btn{ font-family:inherit; border:none; background:var(--accent); color:#fff; font-size:14px; font-weight:700; padding:10px 16px; border-radius:10px; cursor:pointer; white-space:nowrap; transition:background .15s; }
+.add-btn:hover{ background:var(--accent-d); }
+.list{ display:flex; flex-direction:column; gap:10px; }
+.card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px 22px; transition:border-color .15s; overflow-wrap:anywhere; min-width:0; }
+.card:hover{ border-color:#E0D8C8; }
+.empty{ text-align:center; color:var(--soft); font-size:15px; padding:48px 16px; line-height:1.9; }
+
+.notice .t{ font-weight:700; font-size:16.5px; color:var(--ink); }
+.notice .b{ font-size:15.5px; margin-top:8px; white-space:pre-wrap; color:var(--ink2); line-height:1.65; }
+.notice .d{ font-size:12.5px; color:var(--soft); margin-top:12px; }
+.notice img{ width:100%; border-radius:12px; margin-top:11px; display:block; }
+.notice .d .admin-by{ font-weight:800; color:var(--accent-d); }
+
+.pray .top{ display:flex; align-items:center; gap:8px; }
+.pray .who{ font-size:15.5px; font-weight:700; color:var(--ink); }
+.scope{ font-size:10px; font-weight:700; padding:3px 9px; border-radius:999px; letter-spacing:.2px; }
+.scope.public{ background:var(--ok-bg); color:var(--ok); }
+.scope.leader{ background:var(--lead-bg); color:var(--lead); }
+.scope.private{ background:var(--priv-bg); color:var(--priv); }
+.pray .b{ font-size:15.5px; margin-top:10px; white-space:pre-wrap; color:var(--ink2); line-height:1.65; }
+.pray .d{ font-size:12.5px; color:var(--soft); margin-top:11px; }
+
+.meeting .mt{ display:flex; align-items:baseline; justify-content:space-between; }
+.meeting .wk{ font-size:16.5px; font-weight:800; color:var(--ink); letter-spacing:-.3px; }
+.meeting .dt{ font-size:13px; color:var(--soft); }
+.meeting .loc{ font-size:13.5px; color:var(--soft); margin-top:5px; }
+.meeting .b{ font-size:15.5px; margin-top:11px; white-space:pre-wrap; color:var(--ink2); line-height:1.65; }
+.meeting .att{ font-size:13px; color:var(--accent-d); margin-top:11px; font-weight:700; }
+.meeting img{ width:100%; border-radius:12px; margin-top:12px; display:block; }
+
+.member{ display:flex; align-items:center; gap:13px; }
+.member .av{ width:42px; height:42px; border-radius:13px; background:var(--accent-soft); color:var(--accent-d); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; flex:none; }
+.member .nm{ font-size:16px; font-weight:700; color:var(--ink); }
+.member .ph{ font-size:13.5px; color:var(--soft); margin-top:2px; }
+.member .role{ margin-left:auto; font-size:10px; font-weight:800; padding:3px 10px; border-radius:999px; background:var(--accent-soft); color:var(--accent-d); letter-spacing:.2px; }
+.mini-del{ margin-left:auto; border:1px solid var(--line); background:none; color:var(--warn); font-family:inherit; font-size:11px; font-weight:700; padding:4px 11px; border-radius:8px; cursor:pointer; transition:.12s; }
+.mini-del:hover{ border-color:var(--warn); background:#F6ECE7; }
+
+.region-card{ display:flex; align-items:center; gap:14px; }
+.region-card .ic{ width:46px; height:46px; border-radius:13px; background:var(--accent-soft); color:var(--accent-d); display:flex; align-items:center; justify-content:center; font-size:21px; flex:none; }
+.region-card .rn{ font-size:15.5px; font-weight:800; color:var(--ink); letter-spacing:-.3px; }
+.region-card .rm{ font-size:12px; color:var(--soft); margin-top:3px; }
+.region-card .rc-main{ flex:1; min-width:0; }
+.region-card .rc-actions{ display:flex; gap:6px; flex:none; }
+.rc-btn{ border:1px solid var(--line); background:none; font-family:inherit; font-size:12px; font-weight:700; padding:6px 12px; border-radius:9px; cursor:pointer; transition:.12s; }
+.rc-btn.view{ color:var(--ink2); } .rc-btn.view:hover{ border-color:var(--accent); color:var(--accent-d); }
+.rc-btn.del{ color:var(--warn); } .rc-btn.del:hover{ border-color:var(--warn); background:#F6ECE7; }
+.adm-kpi{ display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; }
+.adm-kpi .k{ flex:1; min-width:70px; background:var(--card); border:1px solid var(--line); border-radius:15px; padding:18px 12px; text-align:center; }
+.adm-kpi .n{ font-size:26px; font-weight:800; color:var(--accent-d); letter-spacing:-.5px; }
+.adm-kpi .l{ font-size:11px; color:var(--soft); font-weight:600; margin-top:4px; }
+.adm-acts{ display:flex; gap:8px; }
+.add-btn.ghost{ background:var(--accent-soft); color:var(--accent-d); }
+.add-btn.ghost:hover{ background:#DCE3D6; }
+.back-btn{ border:none; background:none; font-family:inherit; font-size:13px; font-weight:700; color:var(--soft); cursor:pointer; padding:4px 0; }
+.back-btn:hover{ color:var(--accent-d); }
+.adm-sub{ font-size:11px; font-weight:800; color:var(--soft); margin:24px 2px 12px; letter-spacing:.8px; text-transform:uppercase; }
+
+.comments{ margin-top:14px; border-top:1px solid var(--line); padding-top:13px; }
+.cmt{ font-size:14px; color:var(--ink2); margin-bottom:8px; line-height:1.6; }
+.cmt b{ color:var(--ink); font-weight:700; margin-right:4px; }
+.cmt .ct{ color:var(--soft); font-size:11.5px; margin-left:4px; }
+.cmt-add{ display:flex; gap:6px; margin-top:10px; }
+.cmt-in{ flex:1; border:1px solid var(--line); border-radius:10px; padding:10px 13px; font-family:inherit; font-size:14.5px; outline:none; background:var(--bg2); transition:.15s; }
+.cmt-in:focus{ border-color:var(--accent); background:var(--card); }
+.cmt-btn{ border:none; background:var(--accent-soft); color:var(--accent-d); font-family:inherit; font-size:13.5px; font-weight:700; padding:0 16px; border-radius:10px; cursor:pointer; white-space:nowrap; transition:.12s; }
+.cmt-btn:hover{ background:#DCE3D6; }
+
+.mini-edit{ margin-left:auto; border:1px solid var(--line); background:none; color:var(--soft); font-family:inherit; font-size:11px; font-weight:700; padding:4px 10px; border-radius:8px; cursor:pointer; transition:.12s; }
+.mini-edit:hover{ border-color:var(--accent); color:var(--accent-d); }
+
+.post .p-top{ display:flex; align-items:center; justify-content:space-between; }
+.post .who{ font-size:15px; font-weight:700; color:var(--ink); }
+.post .d{ font-size:12.5px; color:var(--soft); }
+.post .b{ font-size:15.5px; margin-top:10px; white-space:pre-wrap; color:var(--ink2); line-height:1.65; }
+.post img{ width:100%; border-radius:12px; margin-top:12px; display:block; }
+.file-link{ display:inline-block; margin-top:12px; font-size:13px; font-weight:600; color:var(--accent-d); background:var(--accent-soft); padding:8px 14px; border-radius:10px; text-decoration:none; }
+
+.att-list{ display:flex; flex-wrap:wrap; gap:8px; }
+.att-list .cb{ display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:var(--ink2); background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:8px 13px; cursor:pointer; }
+.att-list .cb input{ width:auto; accent-color:var(--accent); }
+
+@media(min-width:760px){
+  .app{ padding-bottom:0; }
+  .topnav{ display:flex; }
+  .tabbar{ display:none; }
+  .scr{ padding:36px 24px 64px; }
+  .welcome .greet{ font-size:29px; }
+  .sec-t{ font-size:22px; }
+}
+
+/* ===== 모달 ===== */
+.overlay{ position:fixed; inset:0; background:rgba(41,38,31,.42); display:flex; align-items:flex-end; justify-content:center; z-index:50; }
+.overlay.hidden{ display:none; }
+.sheet{ background:var(--card); width:100%; max-width:520px; border-radius:22px 22px 0 0; padding:26px 22px 30px; max-height:90vh; overflow-y:auto; overflow-wrap:break-word; word-break:break-word; }
+@media(min-width:760px){ .overlay{ align-items:center; } .sheet{ border-radius:18px; max-width:430px; } }
+.sheet h3{ font-size:20px; font-weight:800; letter-spacing:-.5px; color:var(--ink); margin-bottom:6px; }
+.sheet .desc{ font-size:13.5px; color:var(--soft); margin-bottom:10px; line-height:1.55; }
+.sheet label{ font-size:12.5px; font-weight:700; color:var(--soft); display:block; margin:15px 0 6px; text-transform:uppercase; letter-spacing:.5px; }
+.sheet input, .sheet textarea, .sheet select{ width:100%; border:1px solid var(--line); border-radius:11px; padding:13px 14px; font-family:inherit; font-size:16px; outline:none; color:var(--ink); background:var(--bg2); transition:.15s; }
+.sheet textarea{ resize:none; min-height:100px; }
+.sheet input:focus, .sheet textarea:focus{ border-color:var(--accent); background:var(--card); }
+.scope-pick{ display:flex; gap:7px; }
+.scope-pick button{ flex:1; border:1.5px solid var(--line); background:var(--bg2); border-radius:10px; padding:11px 4px; font-family:inherit; font-size:13.5px; font-weight:700; color:var(--soft); cursor:pointer; transition:.12s; }
+.scope-pick button.on{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-d); }
+.sheet-actions{ display:flex; gap:10px; margin-top:24px; }
+.sheet-actions button{ flex:1; border:none; border-radius:11px; padding:15px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; }
+.sheet-actions .cancel{ background:var(--line); color:var(--ink2); }
+.sheet-actions .save{ background:var(--accent); color:#fff; }
+.photo-prev{ width:100%; border-radius:12px; margin-top:8px; display:none; }
+.demo-flag{ position:fixed; top:8px; right:10px; background:var(--accent); color:#fff; font-size:10.5px; font-weight:700; padding:3px 11px; border-radius:999px; z-index:60; opacity:.85; }
+
+/* ===== 추가 기능 ===== */
+.next-meet{ background:var(--accent-soft); border:1px solid var(--accent); border-radius:16px; padding:16px 18px; margin-bottom:20px; }
+.next-meet .nm-lab{ font-size:10.5px; font-weight:800; color:var(--accent-d); letter-spacing:.6px; text-transform:uppercase; }
+.next-meet .nm-when{ font-size:17px; font-weight:800; color:var(--ink); margin-top:6px; letter-spacing:-.3px; }
+.next-meet .nm-where{ font-size:13px; color:var(--ink2); margin-top:5px; }
+.next-meet .nm-note{ font-size:12.5px; color:var(--ink2); margin-top:8px; white-space:pre-wrap; }
+.next-meet .nm-edit{ float:right; border:none; background:var(--card); color:var(--accent-d); font-family:inherit; font-size:11.5px; font-weight:700; padding:5px 11px; border-radius:8px; cursor:pointer; }
+.next-meet.empty-nm{ background:var(--bg2); border-style:dashed; border-color:var(--line); color:var(--soft); }
+.bday-sec{ background:var(--lead-bg); border:1px solid var(--lead); border-radius:16px; padding:14px 18px; margin-bottom:20px; }
+.bday-sec .bd-lab{ font-size:11.5px; font-weight:800; color:var(--lead); }
+.bday-sec .bd-list{ font-size:13.5px; color:var(--ink); margin-top:6px; font-weight:600; }
+.pray .answered{ display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:800; padding:3px 9px; border-radius:999px; background:var(--ok-bg); color:var(--ok); margin-left:6px; }
+.pray .testimony{ font-size:13px; color:var(--ok); background:var(--ok-bg); border-radius:10px; padding:9px 12px; margin-top:10px; white-space:pre-wrap; }
+.pray .testimony b{ font-weight:800; }
+.react-row{ display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.amen-btn{ border:1px solid var(--line); background:var(--bg2); color:var(--ink2); font-family:inherit; font-size:12px; font-weight:700; padding:5px 13px; border-radius:999px; cursor:pointer; transition:.12s; }
+.amen-btn.on{ border-color:var(--ok); background:var(--ok-bg); color:var(--ok); }
+.amen-btn:hover{ border-color:var(--ok); }
+.mini-ans{ border:1px solid var(--line); background:none; color:var(--ok); font-family:inherit; font-size:11px; font-weight:700; padding:4px 11px; border-radius:8px; cursor:pointer; }
+.mini-ans:hover{ border-color:var(--ok); background:var(--ok-bg); }
+.stat-box{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px 18px; margin-bottom:20px; }
+.stat-box .sb-t{ font-size:11.5px; font-weight:800; color:var(--soft); letter-spacing:.4px; text-transform:uppercase; margin-bottom:12px; }
+.stat-row{ display:flex; gap:10px; }
+.stat-row .st{ flex:1; text-align:center; }
+.stat-row .st .v{ font-size:22px; font-weight:800; color:var(--accent-d); letter-spacing:-.5px; }
+.stat-row .st .l{ font-size:11px; color:var(--soft); font-weight:600; margin-top:3px; }
+.rate-list{ margin-top:14px; display:flex; flex-direction:column; gap:9px; }
+.rate-item .rt-top{ display:flex; justify-content:space-between; margin-bottom:4px; }
+.rate-item .rt-name{ font-weight:700; color:var(--ink); font-size:12.5px; }
+.rate-item .rt-pct{ color:var(--ink2); font-weight:700; font-size:12.5px; }
+.rate-bar{ height:7px; background:var(--line); border-radius:999px; overflow:hidden; }
+.rate-bar i{ display:block; height:100%; background:var(--accent); border-radius:999px; }
+.absent-badge{ font-size:10px; font-weight:800; padding:3px 9px; border-radius:999px; background:#F6ECE7; color:var(--warn); margin-left:8px; }
+[data-theme="dark"] .absent-badge{ background:#3A2520; }
+.meeting .passage{ font-size:13px; color:var(--accent-d); background:var(--accent-soft); border-radius:9px; padding:7px 11px; margin-top:11px; font-weight:600; }
+.meeting .question{ font-size:13px; color:var(--ink2); margin-top:9px; font-style:italic; }
+.member .bd{ font-size:11.5px; color:var(--lead); margin-top:2px; font-weight:600; }
+.next-meet .dday{ display:inline-block; background:var(--accent-d); color:#fff; font-size:11px; font-weight:800; padding:2px 9px; border-radius:999px; margin-left:8px; vertical-align:middle; }
+.next-meet .nm-duty{ font-size:12.5px; color:var(--ink2); margin-top:8px; }
+.next-meet .nm-duty b{ color:var(--accent-d); font-weight:700; }
+.ph-actions{ display:flex; gap:6px; margin-top:7px; }
+.ph-link{ display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:700; color:var(--accent-d); background:var(--accent-soft); padding:4px 11px; border-radius:8px; text-decoration:none; }
+.kind-badge{ font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px; margin-right:6px; }
+.kind-badge.qt{ background:var(--accent-soft); color:var(--accent-d); }
+.kind-badge.thanks{ background:var(--ok-bg); color:var(--ok); }
+.filter-chips{ display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+.fchip{ border:1px solid var(--line); background:var(--bg2); color:var(--ink2); font-family:inherit; font-size:12px; font-weight:700; padding:6px 13px; border-radius:999px; cursor:pointer; }
+.fchip.on{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-d); }
+.gallery{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:20px; }
+.gallery img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; display:block; }
+.care-item{ background:var(--bg2); border:1px solid var(--line); border-radius:11px; padding:11px 13px; margin-bottom:8px; }
+.care-item .cbd{ font-size:13px; color:var(--ink2); white-space:pre-wrap; line-height:1.6; }
+.care-item .cd{ font-size:11px; color:var(--soft); margin-top:6px; }
+.mini-care{ border:1px solid var(--line); background:none; color:var(--accent-d); font-family:inherit; font-size:11px; font-weight:700; padding:4px 11px; border-radius:8px; cursor:pointer; }
+.mini-care:hover{ border-color:var(--accent); background:var(--accent-soft); }
+.member .m-act{ margin-left:auto; display:flex; gap:6px; align-items:center; flex:none; }
+.backup-row{ display:flex; gap:8px; margin-top:10px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="overlay hidden" id="overlay"><div class="sheet" id="sheet"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SB_URL='https://bfgyndtygqpwqnmqirtl.supabase.co';
+const SB_KEY='sb_publishable_zh4_MtzjfIKP-VoUz4nW8g_RFOF77mb';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+const sbSignup = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:false, autoRefreshToken:false, storageKey:'zn_signup_tmp' } });
+
+// ===== 메모리 캐시 =====
+const TABLES=['regions','profiles','notices','prayers','meetings','posts','next_meetings','care','broadcasts'];
+const DB={ regions:[], profiles:[], notices:[], prayers:[], meetings:[], posts:[], next_meetings:[], care:[], broadcasts:[] };
+const KEYMAP={ accounts:'profiles', nextMeetings:'next_meetings' };
+function tbl(k){ return KEYMAP[k]||k; }
+function clearDB(){ TABLES.forEach(t=>DB[t]=[]); }
+
+// 서버 행 → 화면 객체 (필드명 호환)
+function fromDB(table, r){
+  if(!r) return r;
+  const o={...r};
+  if('region_id' in r) o.regionId=r.region_id;
+  if('created_at' in r && table!=='next_meetings') o.time=new Date(r.created_at).getTime();
+  if(table==='notices'||table==='posts') o.by=r.author_name;
+  if(table==='care'){ o.by=r.author_name; o.memberName=r.member_name; }
+  if(table==='next_meetings'){ o.regionId=r.region_id; o.leadDuty=r.lead_duty; o.snackDuty=r.snack_duty; }
+  if(table==='regions') o.inviteCode=r.invite_code;
+  return o;
+}
+
+const store={
+  get(k,def){
+    if(k==='theme'){ try{ return localStorage.getItem('zn_theme')||def; }catch(e){ return def; } }
+    const t=tbl(k); if(t in DB) return DB[t];
+    return def!==undefined?def:[];
+  },
+  set(k,val){
+    if(k==='theme'){ try{ localStorage.setItem('zn_theme',val); }catch(e){} return; }
+    const t=tbl(k); if(t in DB) DB[t]=val;
+  },
+};
+
+// ===== 서버 쓰기 helper =====
+async function dbAdd(table, row){
+  const {data,error}=await sb.from(table).insert(row).select().single();
+  if(error){ alert('저장에 실패했어요.\n'+error.message); return null; }
+  DB[table].push(fromDB(table,data)); return data;
+}
+async function dbUpd(table, id, patch){
+  const {data,error}=await sb.from(table).update(patch).eq('id',id).select().single();
+  if(error){ alert('수정에 실패했어요.\n'+error.message); return null; }
+  const i=DB[table].findIndex(x=>x.id===id); if(i>=0) DB[table][i]=fromDB(table,data); return data;
+}
+async function dbDel(table, id){
+  const {error}=await sb.from(table).delete().eq('id',id);
+  if(error){ alert('삭제에 실패했어요.\n'+error.message); return false; }
+  DB[table]=DB[table].filter(x=>x.id!==id); return true;
+}
+
+// ===== 계정 만들기 (구역장이 구역원 추가 등) =====
+function genCode(){ return Math.random().toString(36).slice(2,8).toUpperCase(); }
+async function createAccount({username,password,name,role,regionId,phone,birthday,position}){
+  const u=username.trim().toLowerCase();
+  const {data,error}=await sbSignup.auth.signUp({
+    email:u+'@zonenote.app', password,
+    options:{ data:{ app:'zonenote', username:u, name, role, region_id:regionId||'', phone:phone||'', birthday:birthday||'', position:position||'' } }
+  });
+  try{ await sbSignup.auth.signOut(); }catch(e){}
+  if(error) throw error;
+  if(data.user){ DB.profiles.push({ id:data.user.id, regionId:regionId||null, role, name, username:u, phone:phone||'', birthday:birthday||'', position:position||'' }); }
+  return data.user;
+}
+
+// ===== 데이터 로드 =====
+async function loadAll(){
+  for(const t of TABLES){
+    const {data,error}=await sb.from(t).select('*');
+    DB[t]=error?[]:(data||[]).map(r=>fromDB(t,r));
+  }
+}
+
+// ===== 부팅 =====
+async function boot(){
+  applyTheme(theme);
+  const {data:{session:sess}}=await sb.auth.getSession();
+  if(!sess){ SESSION=null; render(); return; }
+  await startApp(sess.user.id);
+}
+async function startApp(userId){
+  let {data:prof}=await sb.from('profiles').select('*').eq('id',userId).maybeSingle();
+  if(!prof){ await new Promise(r=>setTimeout(r,700)); ({data:prof}=await sb.from('profiles').select('*').eq('id',userId).maybeSingle()); }
+  if(!prof){ try{ await sb.auth.signOut(); }catch(e){} SESSION=null; render(); alert('계정 정보를 불러오지 못했어요. 다시 로그인해 주세요.'); return; }
+  SESSION=fromDB('profiles',prof);
+  await loadAll();
+  render();
+}
+const uid=p=>(p||'i')+Date.now()+Math.floor(Math.random()*999);
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=t=>{ try{ return new Date(t).toLocaleDateString('ko-KR',{month:'long',day:'numeric'}); }catch(e){ return ''; } };
+function ddayText(dateStr){ if(!dateStr) return ''; try{ const today=new Date(); today.setHours(0,0,0,0); const d=new Date(dateStr+'T00:00:00'); const diff=Math.round((d-today)/86400000); if(diff===0) return 'D-DAY'; if(diff>0) return 'D-'+diff; return '지난 모임'; }catch(e){ return ''; } }
+
+// ===== 시드 (서버 사용으로 불필요) =====
+
+// ===== 세션 =====
+let SESSION=null;
+function session(){ return SESSION; }
+function isLeader(){ return SESSION?.role==='leader'; }
+function isSuper(){ return SESSION?.role==='super'; }
+function curRegionId(){ return SESSION?.regionId; }
+function regionName(){ const r=DB.regions.find(x=>x.id===curRegionId()); return r?r.name:'우리 구역'; }
+async function logout(){ try{ await sb.auth.signOut(); }catch(e){} SESSION=null; clearDB(); tab='home'; render(); }
+function byRegion(key){ return store.get(key,[]).filter(x=>x.regionId===curRegionId()); }
+
+let tab='home';
+let admView='list', admRegion=null;
+let theme = (function(){ try{ return store.get('theme')||'light'; }catch(e){ return 'light'; } })();
+function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); }
+function toggleTheme(){ theme = theme==='dark'?'light':'dark'; store.set('theme',theme); applyTheme(theme); render(); }
+function themeBtn(){ return `<button class="theme-btn" id="themeToggle" title="화면 모드 전환" aria-label="화면 모드 전환">${theme==='dark'?'☀️':'🌙'}</button>`; }
+
+// ===== 렌더 =====
+function render(){
+  const root=document.getElementById('root');
+  const s=session();
+  if(!s){ root.innerHTML=loginView(); bindLogin(); return; }
+  if(s.role==='super'){ root.innerHTML=`<div class="app">${superHeader()}<div class="scr" id="scr">${superView()}</div></div>`; bindSuper(); return; }
+  // 소속 구역이 없는 경우 (구역이 삭제되었거나 미배정)
+  if(!s.regionId){
+    root.innerHTML=`<div class="app"><div class="topbar">${header()}</div><div class="scr"><div class="empty" style="margin-top:40px;line-height:1.8">소속된 구역이 없어요.\n구역이 삭제되었거나, 아직 배정되지 않았습니다.\n슈퍼바이저(총괄)에게 문의해 주세요.</div></div></div>`;
+    const lo=document.getElementById('logout'); if(lo) lo.onclick=logout;
+    return;
+  }
+  // 구역장/구역원 앱
+  root.innerHTML = `<div class="app"><div class="topbar">${header()}${topnav()}</div><div class="scr" id="scr"></div>${tabbar()}</div>`;
+  document.getElementById('scr').innerHTML = ({home:homeView, pray:prayView, meet:meetView, board:boardView, member:memberView}[tab])();
+  bindNav(); bindScreen();
+}
+
+// ===== 로그인 =====
+function loginView(){
+  return `<div class="login">
+    <div class="login-card">
+      <div class="emblem">🌿</div>
+      <div class="logo">구역<span class="leaf">노트</span></div>
+      <div class="tag">우리 구역, 함께 기도하고 기록해요</div>
+      <div class="field"><label>아이디</label><input id="lgUser" placeholder="아이디" autocomplete="username" autocapitalize="off" /></div>
+      <div class="field"><label>비밀번호</label><input id="lgPw" type="password" placeholder="비밀번호" autocomplete="current-password" /></div>
+      <button class="btn-main" id="lgGo">로그인</button>
+      <div class="err" id="lgErr"></div>
+    </div>
+    <div class="login-help">아이디·비밀번호는 구역장에게 받으세요.</div>
+  </div>`;
+}
+function bindLogin(){
+  const err=t=>{ const e=document.getElementById('lgErr'); if(e) e.textContent=t; };
+  const go=async ()=>{
+    const u=document.getElementById('lgUser').value.trim().toLowerCase(), p=document.getElementById('lgPw').value;
+    if(!u||!p){ err('아이디와 비밀번호를 입력해 주세요.'); return; }
+    const btn=document.getElementById('lgGo'); btn.disabled=true; btn.textContent='로그인 중…';
+    const {data,error}=await sb.auth.signInWithPassword({ email:u+'@zonenote.app', password:p });
+    if(error){ err('아이디 또는 비밀번호가 맞지 않아요.'); btn.disabled=false; btn.textContent='로그인'; return; }
+    tab='home'; await startApp(data.user.id);
+  };
+  const gb=document.getElementById('lgGo'); if(gb) gb.onclick=go;
+  const pw=document.getElementById('lgPw'); if(pw) pw.onkeydown=e=>{ if(e.key==='Enter') go(); };
+}
+
+// ===== 슈퍼바이저 =====
+function superHeader(){
+  const m=session();
+  return `<div class="hdr"><div class="hdr-in">
+    <div class="group"><div class="gwrap"><span class="serif" style="font-size:18px;font-weight:800">구역 관리</span><small>구역노트 🌿 · 슈퍼바이저</small></div></div>
+    <div class="me"><span class="nm">${esc(m.name)}</span><span class="badge super">슈퍼바이저</span>${themeBtn()}<button class="out" id="logout">나가기</button></div>
+  </div></div>`;
+}
+function superView(){
+  if(admView==='detail' && admRegion) return superDetail(admRegion);
+  const regions=store.get('regions',[]), accts=store.get('accounts',[]);
+  const totalMembers=accts.filter(a=>a.role==='leader'||a.role==='member').length;
+  const totalNotices=store.get('notices',[]).length, totalMeetings=store.get('meetings',[]).length;
+  const kpi=`<div class="adm-kpi">
+    <div class="k"><div class="n">${regions.length}</div><div class="l">구역</div></div>
+    <div class="k"><div class="n">${totalMembers}</div><div class="l">구역원</div></div>
+    <div class="k"><div class="n">${totalNotices}</div><div class="l">공지</div></div>
+    <div class="k"><div class="n">${totalMeetings}</div><div class="l">모임 기록</div></div>
+  </div>`;
+  const cards=regions.map(r=>{
+    const leader=accts.find(a=>a.regionId===r.id && a.role==='leader');
+    const members=accts.filter(a=>a.regionId===r.id && a.role==='member').length;
+    return `<div class="card region-card">
+      <div class="ic">⛪</div>
+      <div class="rc-main"><div class="rn">${esc(r.name)}</div><div class="rm">구역장 ${leader?esc(leader.name)+' ('+esc(leader.username)+')':'미지정'} · 구역원 ${members}명</div></div>
+      <div class="rc-actions"><button class="rc-btn view" data-r="${r.id}">상세</button><button class="rc-btn del" data-r="${r.id}">삭제</button></div>
+    </div>`;
+  }).join('');
+  const bc=store.get('broadcasts',[]).slice().sort((a,b)=>b.time-a.time);
+  const bcHTML=bc.length?`<div class="sec-t" style="margin-top:26px">보낸 전체 공지</div><div class="list">`+bc.map(x=>`<div class="card notice"><div class="t">${esc(x.title)}</div><div class="b">${esc(x.body)}</div><div class="d">전체 발송 · ${fmt(x.time)} <button class="mini-edit" data-ebc="${x.id}">수정</button><button class="mini-del" data-dbc="${x.id}">삭제</button></div></div>`).join('')+`</div>`:'';
+  return `${kpi}<div class="sec-t">전체 구역 <span class="adm-acts"><button class="add-btn ghost" id="broadcast">📢 전체 공지</button><button class="add-btn" id="addRegion">+ 구역 생성</button></span></div>
+    ${regions.length?`<div class="list">${cards}</div>`:'<div class="empty">아직 생성된 구역이 없어요.\n+ 구역 생성으로 첫 구역을 만들어보세요.</div>'}${bcHTML}`;
+}
+function superDetail(rid){
+  const r=store.get('regions',[]).find(x=>x.id===rid); if(!r){ admView='list'; return superView(); }
+  const notices=store.get('notices',[]).filter(n=>n.regionId===rid).sort((a,b)=>b.time-a.time);
+  const meetings=store.get('meetings',[]).filter(m=>m.regionId===rid).sort((a,b)=>b.time-a.time);
+  const members=store.get('accounts',[]).filter(a=>a.regionId===rid&&(a.role==='leader'||a.role==='member'));
+  const nHTML=notices.length?notices.map(n=>`<div class="card notice"><div class="t">${esc(n.title)}</div><div class="b">${esc(n.body)}</div>${n.file?(n.file.isImage?`<img src="${n.file.dataURL}" alt="첨부 이미지" />`:`<a class="file-link" href="${n.file.dataURL}" download="${esc(n.file.name)}">📎 ${esc(n.file.name)}</a>`):''}<div class="d">${noticeBy(n.by)} · ${fmt(n.time)}</div></div>`).join(''):'<div class="empty">공지 없음</div>';
+  const mHTML=meetings.length?meetings.map(x=>`<div class="card meeting"><div class="mt"><span class="wk">${esc(x.week)}</span><span class="dt">${esc(x.date)}</span></div><div class="loc">📍 ${esc(x.place)}</div>${x.body?`<div class="b">${esc(x.body)}</div>`:''}${(x.attendees&&x.attendees.length)?`<div class="att">참석 ${x.attendees.length}명 · ${x.attendees.map(esc).join(', ')}</div>`:''}</div>`).join(''):'<div class="empty">모임 기록 없음</div>';
+  const leader=members.find(m=>m.role==='leader');
+  const mems=members.filter(m=>m.role==='member');
+  const memHTML=mems.map(m=>`<div class="card member"><div class="av">${esc(m.name.slice(0,1))}</div><div style="flex:1;min-width:0"><div class="nm">${esc(m.name)}${m.position?` <span class="pos-badge">${esc(m.position)}</span>`:''}</div>${m.phone?`<div class="ph">${esc(m.phone)}</div>`:''}${m.username?`<div class="ph">아이디 ${esc(m.username)}</div>`:''}</div><button class="mini-del" data-delm="${m.id}">삭제</button></div>`).join('')||'<div class="empty" style="padding:24px">아직 구역원이 없어요.</div>';
+  const leaderHTML=leader
+    ? `<div class="card member"><div class="av">${esc(leader.name.slice(0,1))}</div><div><div class="nm">${esc(leader.name)}</div><div class="ph">아이디 ${esc(leader.username)}</div></div><button class="rc-btn view" id="changeLeader" data-r="${rid}">변경</button></div>`
+    : `<div class="empty" style="padding:22px">구역장이 지정되지 않았어요.<br><button class="add-btn ghost" id="changeLeader" data-r="${rid}" style="margin-top:10px">구역장 지정</button></div>`;
+  const memNames=members.map(m=>m.name); const total=meetings.length;
+  let statHTML='';
+  if(total){
+    const avgAtt=Math.round(meetings.reduce((s,x)=>s+((x.attendees||[]).length),0)/total*10)/10;
+    const rates=memNames.map(n=>{ const cnt=meetings.filter(x=>(x.attendees||[]).includes(n)).length; return {name:n,pct:Math.round(cnt/total*100),cnt}; }).sort((a,b)=>b.pct-a.pct);
+    const recent=meetings.slice(0,Math.min(3,total));
+    const longAbsent=memNames.filter(n=>!recent.some(x=>(x.attendees||[]).includes(n)));
+    const rateHTML=rates.map(r=>`<div class="rate-item"><div class="rt-top"><span class="rt-name">${esc(r.name)}${longAbsent.includes(r.name)?'<span class="absent-badge">최근 결석</span>':''}</span><span class="rt-pct">${r.pct}% (${r.cnt}/${total})</span></div><div class="rate-bar"><i style="width:${r.pct}%"></i></div></div>`).join('');
+    statHTML=`<div class="stat-box"><div class="sb-t">📊 출석 현황</div><div class="stat-row"><div class="st"><div class="v">${total}</div><div class="l">모임 횟수</div></div><div class="st"><div class="v">${avgAtt}</div><div class="l">평균 출석(명)</div></div><div class="st"><div class="v">${memNames.length}</div><div class="l">구역원</div></div></div><div class="rate-list">${rateHTML}</div>${longAbsent.length?`<div style="font-size:12px;color:var(--warn);margin-top:13px;font-weight:600;line-height:1.6">⚠ 최근 ${recent.length}회 결석: ${longAbsent.map(esc).join(', ')}</div>`:''}</div>`;
+  }
+  return `<button class="back-btn" id="admBack">← 구역 목록</button>
+    <div class="sec-t" style="margin-top:10px">${esc(r.name)} <span class="adm-acts"><button class="add-btn ghost" id="editRegionName" data-r="${rid}">이름 수정</button><button class="add-btn" id="admAddMember" data-r="${rid}">+ 구역원</button></span></div>
+    <div class="adm-sub">구역장</div>${leaderHTML}
+    ${statHTML?`<div class="adm-sub">출석 현황</div>${statHTML}`:''}
+    <div class="adm-sub">공지사항</div>${nHTML}
+    <div class="adm-sub">모임 기록</div>${mHTML}
+    <div class="adm-sub">구역원 (${mems.length}명)</div><div class="list">${memHTML}</div>`;
+}
+function bindSuper(){
+  document.getElementById('logout').onclick=logout;
+  const tt=document.getElementById('themeToggle'); if(tt) tt.onclick=toggleTheme;
+  const ar=document.getElementById('addRegion'); if(ar) ar.onclick=openRegion;
+  const bc=document.getElementById('broadcast'); if(bc) bc.onclick=()=>openBroadcast();
+  document.querySelectorAll('[data-ebc]').forEach(b=>b.onclick=()=>openBroadcast(b.dataset.ebc));
+  document.querySelectorAll('[data-dbc]').forEach(b=>b.onclick=()=>delItem('broadcasts',b.dataset.dbc));
+  const bk=document.getElementById('admBack'); if(bk) bk.onclick=()=>{ admView='list'; admRegion=null; render(); };
+  document.querySelectorAll('.rc-btn.view').forEach(b=>b.onclick=()=>{ admView='detail'; admRegion=b.dataset.r; render(); });
+  document.querySelectorAll('.rc-btn.del').forEach(b=>b.onclick=()=>delRegion(b.dataset.r));
+  const cl=document.getElementById('changeLeader'); if(cl) cl.onclick=()=>openChangeLeader(cl.dataset.r);
+  const ern=document.getElementById('editRegionName'); if(ern) ern.onclick=()=>openRegionName(ern.dataset.r);
+  const aam=document.getElementById('admAddMember'); if(aam) aam.onclick=()=>openMember(aam.dataset.r);
+  document.querySelectorAll('[data-delm]').forEach(b=>b.onclick=()=>delMember(b.dataset.delm));
+}
+// (백업/복원은 서버 저장으로 대체됨)
+async function delRegion(rid){
+  const r=DB.regions.find(x=>x.id===rid); if(!r) return;
+  if(!confirm(`'${r.name}' 구역을 삭제할까요?\n이 구역의 공지·모임·기도·게시글·돌봄 기록과 구역원 명단이 모두 삭제됩니다.\n(되돌릴 수 없어요)`)) return;
+  // 이 구역 소속 프로필(구역장·구역원) 먼저 삭제 — 안 그러면 소속만 풀린 계정이 남음
+  const ids=DB.profiles.filter(p=>p.regionId===rid).map(p=>p.id);
+  for(const id of ids){ await sb.from('profiles').delete().eq('id',id); }
+  const ok=await dbDel('regions', rid);
+  if(!ok) return;
+  ['notices','prayers','meetings','posts','next_meetings','care'].forEach(t=>{ DB[t]=DB[t].filter(x=>x.regionId!==rid); });
+  DB.profiles=DB.profiles.filter(p=>p.regionId!==rid);
+  admView='list'; admRegion=null; render();
+}
+function openChangeLeader(rid){
+  const r=DB.regions.find(x=>x.id===rid);
+  const leader=DB.profiles.find(a=>a.regionId===rid&&a.role==='leader');
+  showSheet(`<h3>구역장 지정</h3><div class="desc">${esc(r?r.name:'')}의 구역장 계정을 새로 만듭니다.${leader?'<br>현재 구역장: '+esc(leader.name)+' ('+esc(leader.username)+')':''}</div>
+    <label>구역장 이름</label><input id="clN" placeholder="예: 홍길동" />
+    <label>구역장 아이디</label><input id="clU" placeholder="로그인 아이디" autocomplete="off" autocapitalize="off" />
+    <label>구역장 비밀번호</label><input id="clP" placeholder="비밀번호" />
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="clSave">지정</button></div>`);
+  document.getElementById('clSave').onclick=async ()=>{
+    const n=document.getElementById('clN').value.trim(), u=document.getElementById('clU').value.trim(), p=document.getElementById('clP').value;
+    if(!n||!u||!p) return;
+    const btn=document.getElementById('clSave'); btn.disabled=true; btn.textContent='지정 중…';
+    try{ await createAccount({username:u, password:p, name:n, role:'leader', regionId:rid}); closeSheet(); render(); }
+    catch(e){ alert('지정 실패: '+(e.message||e)); btn.disabled=false; btn.textContent='지정'; }
+  };
+}
+function openBroadcast(editId){
+  const editing = editId ? DB.broadcasts.find(x=>x.id===editId) : null;
+  showSheet(`<h3>${editing?'전체 공지 수정':'전체 구역 공지'}</h3><div class="desc">모든 구역의 홈 화면에 공지가 표시됩니다.</div>
+    <label>제목</label><input id="bcT" placeholder="예: 전체 구역 안내" value="${editing?esc(editing.title):''}" />
+    <label>내용</label><textarea id="bcB" placeholder="공지 내용">${editing?esc(editing.body):''}</textarea>
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="bcSave">${editing?'수정':'전체 발송'}</button></div>`);
+  document.getElementById('bcSave').onclick=async ()=>{
+    const t=document.getElementById('bcT').value.trim(), b=document.getElementById('bcB').value.trim(); if(!t&&!b) return;
+    const btn=document.getElementById('bcSave'); btn.disabled=true; btn.textContent=editing?'수정 중…':'발송 중…';
+    const r = editing ? await dbUpd('broadcasts', editId, {title:t||'(제목 없음)', body:b}) : await dbAdd('broadcasts', {title:t||'(제목 없음)', body:b});
+    if(r){ closeSheet(); render(); } else { btn.disabled=false; btn.textContent=editing?'수정':'전체 발송'; }
+  };
+}
+function openRegion(){
+  showSheet(`<h3>구역 생성</h3><div class="desc">구역과 그 구역의 구역장 로그인 계정을 함께 만듭니다.</div>
+    <label>구역 이름</label><input id="rN" placeholder="예: 사랑 2구역" />
+    <label>구역장 이름</label><input id="rLN" placeholder="예: 홍길동" />
+    <label>구역장 아이디</label><input id="rLU" placeholder="영문/숫자 아이디" autocomplete="off" autocapitalize="off" />
+    <label>구역장 비밀번호</label><input id="rLP" placeholder="비밀번호" />
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="rSave">생성</button></div>`);
+  document.getElementById('rSave').onclick=async ()=>{
+    const n=document.getElementById('rN').value.trim(), ln=document.getElementById('rLN').value.trim(),
+      lu=document.getElementById('rLU').value.trim(), lp=document.getElementById('rLP').value;
+    if(!n||!lu||!lp){ return; }
+    const btn=document.getElementById('rSave'); btn.disabled=true; btn.textContent='생성 중…';
+    try{
+      const {data:reg,error}=await sb.from('regions').insert({name:n, invite_code:genCode()}).select().single();
+      if(error) throw error;
+      DB.regions.push(fromDB('regions',reg));
+      await createAccount({username:lu, password:lp, name:ln||'구역장', role:'leader', regionId:reg.id});
+      closeSheet(); render();
+    }catch(e){ alert('생성 실패: '+(e.message||e)); btn.disabled=false; btn.textContent='생성'; }
+  };
+}
+
+// ===== 구역장/구역원 헤더·네비 =====
+function header(){
+  const m=session();
+  const roleBadge = m.role==='leader'?'<span class="badge leader">구역장</span>':'<span class="badge member">구역원</span>';
+  return `<div class="hdr"><div class="hdr-in">
+    <div class="group"><div class="gwrap"><span id="groupName">${esc(regionName())}</span><small>구역노트 🌿</small></div>${isLeader()?'<button class="edit-g" id="editGroup" title="구역 이름 수정">✏️</button>':''}</div>
+    <div class="me"><span class="nm">${esc(m.name)}</span>${roleBadge}${themeBtn()}<button class="out" id="logout">나가기</button></div>
+  </div></div>`;
+}
+const NAV=[['home','🏠','홈'],['pray','🙏','기도제목'],['meet','📖','모임기록'],['board','💬','게시판'],['member','👥','구역원']];
+function regionMemberNames(){ return store.get('accounts',[]).filter(a=>a.regionId===curRegionId()&&(a.role==='leader'||a.role==='member')).map(a=>a.name); }
+function noticeBy(by){ return (by==='운영자'||by==='플랫폼 총괄관리자') ? '<b class="admin-by">플랫폼 총괄관리자</b>' : esc(by); }
+function commentsHTML(type, item){
+  const cs=(item.comments||[]).slice().sort((a,b)=>a.time-b.time);
+  const lines=cs.map(c=>`<div class="cmt"><b>${esc(c.by)}</b> ${esc(c.body)} <span class="ct">${fmt(c.time)}</span></div>`).join('');
+  return `<div class="comments">${lines}<div class="cmt-add"><input class="cmt-in" id="ci_${type}_${item.id}" placeholder="댓글 달기" /><button class="cmt-btn" data-type="${type}" data-id="${item.id}">등록</button></div></div>`;
+}
+function topnav(){ return `<nav class="topnav">${NAV.map(([k,ic,l])=>`<button data-t="${k}" class="${tab===k?'on':''}"><span class="ic">${ic}</span>${l}</button>`).join('')}</nav>`; }
+function tabbar(){ return `<nav class="tabbar">${NAV.map(([k,ic,l])=>`<button data-t="${k}" class="${tab===k?'on':''}"><span class="ic">${ic}</span><span class="tb-l">${l}</span></button>`).join('')}</nav>`; }
+
+// ===== 화면들 =====
+function homeView(){
+  const m=session();
+  const welcome=`<div class="welcome"><div class="greet">평안하세요, ${esc(m.name)}님</div><div class="wsub">${esc(regionName())} · 함께 기도하고 기록해요</div></div>`;
+  // 다음 모임
+  const nm=store.get('nextMeetings',[]).find(x=>x.regionId===curRegionId());
+  let nmHTML='';
+  if(nm){
+    const dd=ddayText(nm.date);
+    const duty=(nm.snackDuty||nm.leadDuty)?`<div class="nm-duty">${nm.leadDuty?`인도 <b>${esc(nm.leadDuty)}</b>`:''}${(nm.leadDuty&&nm.snackDuty)?' · ':''}${nm.snackDuty?`간식 <b>${esc(nm.snackDuty)}</b>`:''}</div>`:'';
+    nmHTML=`<div class="next-meet">${isLeader()?'<button class="nm-edit" id="editNextMeet">수정</button>':''}<div class="nm-lab">📅 다음 모임</div><div class="nm-when">${esc(nm.date)}${nm.time?' · '+esc(nm.time):''}${dd?`<span class="dday">${dd}</span>`:''}</div>${nm.place?`<div class="nm-where">📍 ${esc(nm.place)}</div>`:''}${duty}${nm.note?`<div class="nm-note">${esc(nm.note)}</div>`:''}</div>`;
+  } else if(isLeader()){
+    nmHTML=`<div class="next-meet empty-nm">아직 등록된 다음 모임이 없어요. <button class="nm-edit" id="editNextMeet" style="float:none;margin-left:4px">+ 다음 모임 정하기</button></div>`;
+  }
+  // 이번 달 생일
+  const mon=String(new Date().getMonth()+1).padStart(2,'0');
+  const bdayList=store.get('accounts',[]).filter(a=>a.regionId===curRegionId()&&(a.role==='leader'||a.role==='member')&&a.birthday&&a.birthday.slice(0,2)===mon).map(a=>({name:a.name, day:a.birthday.slice(3,5)})).sort((a,b)=>(+a.day)-(+b.day));
+  const bdayHTML=bdayList.length?`<div class="bday-sec"><div class="bd-lab">🎂 이번 달 생일</div><div class="bd-list">${bdayList.map(b=>esc(b.name)+' ('+(+mon)+'월 '+(+b.day)+'일)').join('  ·  ')}</div></div>`:'';
+  const notices=byRegion('notices').sort((a,b)=>b.time-a.time);
+  const bcasts=DB.broadcasts.slice().sort((a,b)=>b.time-a.time);
+  const bcHTML=bcasts.length?bcasts.map(x=>`<div class="card notice"><div class="t">${esc(x.title)}</div><div class="b">${esc(x.body)}</div><div class="d"><b class="admin-by">플랫폼 총괄관리자</b> · ${fmt(x.time)}</div></div>`).join(''):'';
+  const list=notices.length?`<div class="list">`+notices.map(n=>{
+    const canEd=(n.author_id===m.id||isLeader());
+    const acts=canEd?` <button class="mini-edit" data-en="${n.id}">수정</button><button class="mini-del" data-dn="${n.id}">삭제</button>`:'';
+    return `<div class="card notice"><div class="t">${esc(n.title)}</div><div class="b">${esc(n.body)}</div>${n.file?(n.file.isImage?`<img src="${n.file.dataURL}" alt="첨부 이미지" />`:`<a class="file-link" href="${n.file.dataURL}" download="${esc(n.file.name)}">📎 ${esc(n.file.name)}</a>`):''}<div class="d">${noticeBy(n.by)} · ${fmt(n.time)}${acts}</div>${commentsHTML('notices',n)}</div>`;
+  }).join('')+`</div>`
+    :`<div class="empty">아직 공지가 없어요.${isLeader()?'\n+ 공지로 첫 공지를 올려보세요.':''}</div>`;
+  // 홈에 보이는 기도제목 (전체공개 + 내가 쓴 것, 최근 3개)
+  const prayAll=byRegion('prayers').filter(p=> p.scope==='public' || p.who===m.name || (p.scope==='leader'&&isLeader()) ).sort((a,b)=>b.time-a.time).slice(0,3);
+  const prayHTML=prayAll.length?`<div class="sec-t" style="margin-top:24px">기도제목 <button class="add-btn" id="goPray">전체 보기</button></div><div class="list">`+prayAll.map(p=>{
+    const amens=p.amens||[]; const iAmen=amens.includes(m.name);
+    return `<div class="card pray"><div class="top"><span class="who">${esc(p.who)}</span>${p.answered?'<span class="answered">✓ 응답됨</span>':''}</div><div class="b">${esc(p.body)}</div><div class="react-row"><button class="amen-btn ${iAmen?'on':''}" data-amen="${p.id}">🙏 아멘${amens.length?' '+amens.length:''}</button></div></div>`;
+  }).join('')+`</div>`:'';
+  return `${welcome}${nmHTML}${bdayHTML}${bcHTML?`<div class="sec-t">전체 공지</div><div class="list">${bcHTML}</div>`:''}<div class="sec-t">공지사항 ${isLeader()?'<button class="add-btn" id="addNotice">+ 공지</button>':''}</div>${list}${prayHTML}`;
+}
+function prayView(){
+  const m=session(), all=byRegion('prayers').sort((a,b)=>b.time-a.time);
+  const visible=all.filter(p=> p.scope==='public' || p.who===m.name || (p.scope==='leader'&&isLeader()) );
+  const sc={public:'🌿 전체공개', leader:'🔒 구역장만', private:'🙈 비공개'};
+  const list=visible.length?`<div class="list">`+visible.map(p=>{
+    const amens=p.amens||[]; const iAmen=amens.includes(m.name); const canEdit=(p.who===m.name||isLeader());
+    return `<div class="card pray"><div class="top"><span class="who">${esc(p.who)}</span><span class="scope ${p.scope}">${sc[p.scope]}</span>${p.answered?'<span class="answered">✓ 응답됨</span>':''}${canEdit?`<button class="mini-edit" data-edit="${p.id}">수정</button><button class="mini-del" data-dpr="${p.id}">삭제</button>`:''}</div><div class="b">${esc(p.body)}</div>${p.answered&&p.testimony?`<div class="testimony"><b>🙌 응답 간증</b><br>${esc(p.testimony)}</div>`:''}<div class="d">${fmt(p.time)}</div><div class="react-row"><button class="amen-btn ${iAmen?'on':''}" data-amen="${p.id}">🙏 아멘${amens.length?' '+amens.length:''}</button>${canEdit?`<button class="mini-ans" data-ans="${p.id}">${p.answered?'응답 수정':'응답 표시'}</button>`:''}</div>${commentsHTML('prayers',p)}</div>`;
+  }).join('')+`</div>`
+    :`<div class="empty">나눌 수 있는 기도제목이 아직 없어요.\n+ 나누기로 기도제목을 나눠보세요.</div>`;
+  return `<div class="sec-t">기도제목 <button class="add-btn" id="addPray">+ 나누기</button></div>${list}`;
+}
+function meetStats(ms){
+  if(!ms.length) return '';
+  const names=regionMemberNames(); const total=ms.length;
+  const avgAtt=Math.round(ms.reduce((s,x)=>s+((x.attendees||[]).length),0)/total*10)/10;
+  const rates=names.map(n=>{ const cnt=ms.filter(x=>(x.attendees||[]).includes(n)).length; return {name:n, pct:Math.round(cnt/total*100), cnt}; }).sort((a,b)=>b.pct-a.pct);
+  const recent=ms.slice(0, Math.min(3, total));
+  const longAbsent=names.filter(n=>!recent.some(x=>(x.attendees||[]).includes(n)));
+  const rateHTML=rates.map(r=>`<div class="rate-item"><div class="rt-top"><span class="rt-name">${esc(r.name)}${longAbsent.includes(r.name)?'<span class="absent-badge">최근 결석</span>':''}</span><span class="rt-pct">${r.pct}% (${r.cnt}/${total})</span></div><div class="rate-bar"><i style="width:${r.pct}%"></i></div></div>`).join('');
+  return `<div class="stat-box"><div class="sb-t">📊 구역 현황 (구역장만 보임)</div><div class="stat-row"><div class="st"><div class="v">${total}</div><div class="l">모임 횟수</div></div><div class="st"><div class="v">${avgAtt}</div><div class="l">평균 출석(명)</div></div><div class="st"><div class="v">${names.length}</div><div class="l">구역원</div></div></div><div class="rate-list">${rateHTML}</div>${longAbsent.length?`<div style="font-size:12px;color:var(--warn);margin-top:13px;font-weight:600;line-height:1.6">⚠ 최근 ${recent.length}회 모임에 안 나온 분: ${longAbsent.map(esc).join(', ')}<br>안부를 전해보세요.</div>`:''}</div>`;
+}
+function meetView(){
+  const ms=byRegion('meetings').sort((a,b)=>b.time-a.time);
+  const stats=isLeader()?meetStats(ms):'';
+  const photos=ms.filter(x=>x.photo);
+  const galBtn=photos.length?`<button class="fchip ${galOpen?'on':''}" id="galToggle" style="margin-bottom:14px">🖼 사진 모아보기 (${photos.length})</button>`:'';
+  const gallery=(galOpen&&photos.length)?`<div class="gallery">${photos.map(x=>`<img src="${x.photo}" alt="모임 사진" />`).join('')}</div>`:'';
+  const list=ms.length?`<div class="list">`+ms.map(x=>{
+    const canEd=(x.author_id===session().id||isLeader());
+    return `<div class="card meeting"><div class="mt"><span class="wk">${esc(x.week)}</span><span class="dt">${esc(x.date)}${canEd?` <button class="mini-del" data-dmt="${x.id}">삭제</button>`:''}</span></div><div class="loc">📍 ${esc(x.place)}</div>${x.passage?`<div class="passage">📖 ${esc(x.passage)}</div>`:''}${x.question?`<div class="question">💬 ${esc(x.question)}</div>`:''}${x.body?`<div class="b">${esc(x.body)}</div>`:''}${(x.attendees&&x.attendees.length)?`<div class="att">참석 ${x.attendees.length}명 · ${x.attendees.map(esc).join(', ')}</div>`:(x.attend?`<div class="att">참석 ${esc(x.attend)}</div>`:'')}${x.photo?`<img src="${x.photo}" alt="모임 사진" />`:''}</div>`;
+  }).join('')+`</div>`
+    :`<div class="empty">아직 모임 기록이 없어요.${isLeader()?'\n+ 기록으로 이번 주 모임을 남겨보세요.':''}</div>`;
+  return `<div class="sec-t">모임 기록 ${isLeader()?'<button class="add-btn" id="addMeet">+ 기록</button>':''}</div>${stats}${galBtn}${gallery}${list}`;
+}
+function memberView(){
+  const ms=store.get('accounts',[]).filter(a=>a.regionId===curRegionId() && (a.role==='leader'||a.role==='member'));
+  const pc=p=>String(p||'').replace(/[^0-9+]/g,'');
+  const list=`<div class="list">`+ms.map(m=>{
+    const phoneHTML=m.phone?`<div class="ph">${esc(m.phone)}</div><div class="ph-actions"><a class="ph-link" href="tel:${pc(m.phone)}">📞 전화</a><a class="ph-link" href="sms:${pc(m.phone)}">💬 문자</a></div>`:'';
+    const roleBadge=m.role==='leader'?'<span class="role">구역장</span>':'';
+    const careBtn=isLeader()?`<button class="mini-care" data-care="${esc(m.name)}">돌봄</button>`:'';
+    const delBtn=(m.role!=='leader'&&isLeader())?`<button class="mini-del" data-delm="${m.id}">삭제</button>`:'';
+    return `<div class="card member"><div class="av">${esc(m.name.slice(0,1))}</div><div style="flex:1;min-width:0"><div class="nm">${esc(m.name)}${m.position?` <span class="pos-badge">${esc(m.position)}</span>`:''}</div>${phoneHTML}${m.birthday?`<div class="bd">🎂 ${esc(m.birthday)}</div>`:''}</div><div class="m-act">${roleBadge}${careBtn}${delBtn}</div></div>`;
+  }).join('')+`</div>`;
+  return `<div class="sec-t">구역원 <span style="font-size:12px;color:var(--soft);font-weight:600">${ms.length}명</span> ${isLeader()?'<button class="add-btn" id="addMember">+ 등록</button>':''}</div>${list}`;
+}
+let boardFilter='all', galOpen=false;
+const KIND={free:{l:'자유',c:''}, qt:{l:'📖 묵상',c:'qt'}, thanks:{l:'🙏 감사',c:'thanks'}};
+function boardView(){
+  let posts=byRegion('posts').sort((a,b)=>b.time-a.time);
+  if(boardFilter!=='all') posts=posts.filter(p=>(p.kind||'free')===boardFilter);
+  const chips=[['all','전체'],['free','자유'],['qt','📖 묵상'],['thanks','🙏 감사']].map(([k,l])=>`<button class="fchip ${boardFilter===k?'on':''}" data-fk="${k}">${l}</button>`).join('');
+  const list=posts.length?`<div class="list">`+posts.map(p=>{
+    const k=p.kind||'free'; const badge=k!=='free'?`<span class="kind-badge ${KIND[k].c}">${KIND[k].l}</span>`:'';
+    const canEd=(p.author_id===session().id||isLeader());
+    const acts=canEd?` <button class="mini-edit" data-ep="${p.id}">수정</button><button class="mini-del" data-dp="${p.id}">삭제</button>`:'';
+    return `<div class="card post"><div class="p-top"><span class="who">${badge}${esc(p.by)}</span><span class="d">${fmt(p.time)}${acts}</span></div>${p.body?`<div class="b">${esc(p.body)}</div>`:''}${p.file?(p.file.isImage?`<img src="${p.file.dataURL}" alt="첨부 이미지" />`:`<a class="file-link" href="${p.file.dataURL}" download="${esc(p.file.name)}">📎 ${esc(p.file.name)}</a>`):''}${commentsHTML('posts',p)}</div>`;
+  }).join('')+`</div>`
+    :`<div class="empty">아직 글이 없어요.\n+ 글쓰기로 첫 글을 남겨보세요.</div>`;
+  return `<div class="sec-t">나눔 게시판 <button class="add-btn" id="addPost">+ 글쓰기</button></div><div class="filter-chips">${chips}</div>${list}`;
+}
+
+// ===== 이벤트 =====
+function bindNav(){
+  document.getElementById('logout').onclick=logout;
+  const tt=document.getElementById('themeToggle'); if(tt) tt.onclick=toggleTheme;
+  const eg=document.getElementById('editGroup'); if(eg) eg.onclick=openGroupName;
+  document.querySelectorAll('.topnav button, .tabbar button').forEach(b=>b.onclick=()=>{ tab=b.dataset.t; render(); });
+}
+function bindScreen(){
+  const on=(id,fn)=>{ const e=document.getElementById(id); if(e) e.onclick=fn; };
+  on('addNotice',()=>openNotice()); on('addPray',()=>openPray()); on('addMeet',openMeet); on('addMember',()=>openMember()); on('addPost',()=>openPost());
+  on('editNextMeet',openNextMeeting);
+  on('goPray',()=>{ tab='pray'; render(); });
+  on('galToggle',()=>{ galOpen=!galOpen; render(); });
+  document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openPray(b.dataset.edit));
+  document.querySelectorAll('[data-en]').forEach(b=>b.onclick=()=>openNotice(b.dataset.en));
+  document.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>delItem('notices',b.dataset.dn));
+  document.querySelectorAll('[data-ep]').forEach(b=>b.onclick=()=>openPost(b.dataset.ep));
+  document.querySelectorAll('[data-dp]').forEach(b=>b.onclick=()=>delItem('posts',b.dataset.dp));
+  document.querySelectorAll('[data-dpr]').forEach(b=>b.onclick=()=>delItem('prayers',b.dataset.dpr));
+  document.querySelectorAll('[data-dmt]').forEach(b=>b.onclick=()=>delItem('meetings',b.dataset.dmt));
+  document.querySelectorAll('[data-delm]').forEach(b=>b.onclick=()=>delMember(b.dataset.delm));
+  document.querySelectorAll('[data-amen]').forEach(b=>b.onclick=()=>togglePrayerAmen(b.dataset.amen));
+  document.querySelectorAll('[data-ans]').forEach(b=>b.onclick=()=>openAnswer(b.dataset.ans));
+  document.querySelectorAll('[data-care]').forEach(b=>b.onclick=()=>openCare(b.dataset.care));
+  document.querySelectorAll('[data-fk]').forEach(b=>b.onclick=()=>{ boardFilter=b.dataset.fk; render(); });
+  document.querySelectorAll('.cmt-btn').forEach(b=>b.onclick=()=>{
+    const inp=document.getElementById('ci_'+b.dataset.type+'_'+b.dataset.id);
+    if(inp && inp.value.trim()){ addComment(b.dataset.type, b.dataset.id, inp.value.trim()); }
+  });
+}
+function openCare(name){
+  const recs=store.get('care',[]).filter(c=>c.regionId===curRegionId()&&c.memberName===name).sort((a,b)=>b.time-a.time);
+  const listHTML=recs.length?recs.map(c=>`<div class="care-item"><div class="cbd">${esc(c.body)}</div><div class="cd">${esc(c.by)} · ${fmt(c.time)}</div></div>`).join(''):'<div class="empty" style="padding:18px">아직 돌봄 기록이 없어요.</div>';
+  showSheet(`<h3>${esc(name)} · 돌봄 기록</h3><div class="desc">심방·연락·기도 등 돌봄 내용을 남겨요. (구역장만 볼 수 있어요)</div>
+    ${listHTML}
+    <label>새 기록</label><textarea id="careB" placeholder="예: 전화로 안부 나눔. 다음 주 심방 예정."></textarea>
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">닫기</button><button class="save" id="careSave">기록 추가</button></div>`);
+  document.getElementById('careSave').onclick=async ()=>{
+    const b=document.getElementById('careB').value.trim(); if(!b) return;
+    await dbAdd('care', { region_id:curRegionId(), member_name:name, author_name:SESSION.name, body:b });
+    openCare(name);
+  };
+}
+async function togglePrayerAmen(id){
+  const p=DB.prayers.find(x=>x.id===id); if(!p) return;
+  const amens=[...(p.amens||[])]; const nm=SESSION.name; const i=amens.indexOf(nm);
+  if(i>=0) amens.splice(i,1); else amens.push(nm);
+  await dbUpd('prayers', id, {amens}); render();
+}
+function openAnswer(id){
+  const p=DB.prayers.find(x=>x.id===id); if(!p) return;
+  showSheet(`<h3>기도 응답 표시</h3><div class="desc">응답된 기도로 표시하고, 짧은 간증을 남길 수 있어요.</div>
+    <label>응답 간증 (선택)</label><textarea id="ansT" placeholder="어떻게 응답되었는지 나눠요">${p.testimony?esc(p.testimony):''}</textarea>
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button>${p.answered?'<button class="cancel" id="ansClear">응답 해제</button>':''}<button class="save" id="ansSave">${p.answered?'수정':'응답 표시'}</button></div>`);
+  document.getElementById('ansSave').onclick=async ()=>{
+    const t=document.getElementById('ansT').value.trim();
+    await dbUpd('prayers', id, {answered:true, testimony:t}); closeSheet(); render();
+  };
+  const cl=document.getElementById('ansClear'); if(cl) cl.onclick=async ()=>{
+    await dbUpd('prayers', id, {answered:false, testimony:''}); closeSheet(); render();
+  };
+}
+function openNextMeeting(){
+  const arr=store.get('nextMeetings',[]); const cur=arr.find(x=>x.regionId===curRegionId())||{};
+  const names=regionMemberNames();
+  const opt=sel=>`<option value="">— 없음 —</option>`+names.map(n=>`<option ${n===sel?'selected':''}>${esc(n)}</option>`).join('');
+  const TIMES=(()=>{ const a=[]; for(let h=6;h<=22;h++){ for(const m of [0,30]){ let ampm,hh; if(h<12){ampm='오전';hh=h;} else if(h===12){ampm='낮';hh=12;} else if(h<18){ampm='오후';hh=h-12;} else {ampm='저녁';hh=h-12;} a.push(`${ampm} ${hh}시${m?' 30분':''}`);} } return a; })();
+  const timeOpt=sel=>{ const list=[...TIMES]; if(sel&&!list.includes(sel)) list.unshift(sel); return `<option value="">— 시간 선택 —</option>`+list.map(t=>`<option ${t===sel?'selected':''}>${esc(t)}</option>`).join(''); };
+  showSheet(`<h3>다음 모임 정하기</h3><div class="desc">구역원들이 홈 화면 맨 위에서 바로 확인할 수 있어요.</div>
+    <label>날짜</label><input id="nmD" type="date" value="${esc(cur.date||'')}" />
+    <label>시간 (선택)</label><select id="nmT">${timeOpt(cur.time)}</select>
+    <label>장소 (선택)</label><input id="nmP" placeholder="예: 김은혜 집사님 댁" value="${esc(cur.place||'')}" autocomplete="off" />
+    <label>인도 당번 (선택)</label><select id="nmLead">${opt(cur.leadDuty)}</select>
+    <label>간식 당번 (선택)</label><select id="nmSnack">${opt(cur.snackDuty)}</select>
+    <label>안내 (선택)</label><textarea id="nmN" placeholder="준비물 등" autocomplete="off">${cur.note?esc(cur.note):''}</textarea>
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="nmSave">저장</button></div>`);
+  document.getElementById('nmSave').onclick=async ()=>{
+    const d=document.getElementById('nmD').value, t=document.getElementById('nmT').value.trim(), p=document.getElementById('nmP').value.trim(), n=document.getElementById('nmN').value.trim();
+    const lead=document.getElementById('nmLead').value, snack=document.getElementById('nmSnack').value;
+    if(!d&&!t&&!p&&!n&&!lead&&!snack) return;
+    const {data,error}=await sb.from('next_meetings').upsert({ region_id:curRegionId(), date:d, time:t, place:p, note:n, lead_duty:lead, snack_duty:snack }).select().single();
+    if(error){ alert('저장에 실패했어요.\n'+error.message); return; }
+    const obj=fromDB('next_meetings',data);
+    const idx=DB.next_meetings.findIndex(x=>x.regionId===curRegionId());
+    if(idx>=0) DB.next_meetings[idx]=obj; else DB.next_meetings.push(obj);
+    closeSheet(); render();
+  };
+}
+async function addComment(type, id, text){
+  const t=tbl(type); const item=DB[t].find(x=>x.id===id); if(!item) return;
+  const comments=[...(item.comments||[]), {id:uid(), by:SESSION.name, body:text, time:Date.now()}];
+  await dbUpd(t, id, {comments}); render();
+}
+async function delMember(id){
+  const a=DB.profiles.find(x=>x.id===id); if(!a) return;
+  if(!confirm(`'${a.name}' 구역원을 명단에서 빼시겠어요?`)) return;
+  await dbDel('profiles', id); render();
+}
+async function delItem(table, id){
+  const label={notices:'공지',prayers:'기도제목',meetings:'모임 기록',posts:'글',broadcasts:'전체 공지'}[table]||'항목';
+  if(!confirm(`이 ${label}을(를) 삭제할까요?\n되돌릴 수 없어요.`)) return;
+  await dbDel(table, id); render();
+}
+
+// ===== 모달 =====
+function showSheet(html){ document.getElementById('sheet').innerHTML=html; document.getElementById('overlay').classList.remove('hidden'); }
+function closeSheet(){ document.getElementById('overlay').classList.add('hidden'); }
+document.getElementById('overlay').onclick=e=>{ if(e.target.id==='overlay') closeSheet(); };
+
+function openRegionName(rid){
+  const r=DB.regions.find(x=>x.id===rid); if(!r) return;
+  showSheet(`<h3>구역 이름 수정</h3><label>구역 이름</label><input id="gName" value="${esc(r.name)}" maxlength="20" />
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="gSave">저장</button></div>`);
+  const inp=document.getElementById('gName'); inp.focus(); inp.select();
+  document.getElementById('gSave').onclick=async ()=>{ const v=inp.value.trim(); if(!v) return; await dbUpd('regions', rid, {name:v}); closeSheet(); render(); };
+}
+function openGroupName(){
+  const cur=regionName();
+  showSheet(`<h3>구역 이름 수정</h3><label>구역 이름</label><input id="gName" value="${esc(cur)}" maxlength="20" />
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="gSave">저장</button></div>`);
+  const inp=document.getElementById('gName'); inp.focus(); inp.select();
+  document.getElementById('gSave').onclick=async ()=>{
+    const v=inp.value.trim(); if(!v) return;
+    await dbUpd('regions', curRegionId(), {name:v}); closeSheet(); render();
+  };
+}
+function openNotice(editId){
+  const editing = editId ? byRegion('notices').find(x=>x.id===editId) : null;
+  let file = editing && editing.file ? editing.file : null;
+  showSheet(`<h3>${editing?'공지 수정':'공지 올리기'}</h3><label>제목</label><input id="nT" placeholder="예: 이번 주 모임 안내" value="${editing?esc(editing.title):''}" />
+    <label>내용</label><textarea id="nB" placeholder="모임 일시·장소·준비물 등">${editing?esc(editing.body):''}</textarea>
+    <label>이미지·파일 첨부 (선택)</label><input id="nF" type="file" /><img class="photo-prev" id="nPrev" alt="" ${editing&&editing.file&&editing.file.isImage?`src="${editing.file.dataURL}" style="display:block"`:''} /><div id="nFName" style="font-size:12px;color:var(--soft);margin-top:7px">${editing&&editing.file&&!editing.file.isImage?'📎 '+esc(editing.file.name):''}</div>
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="nSave">${editing?'수정':'올리기'}</button></div>`);
+  document.getElementById('nF').onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const isImage=f.type.startsWith('image/');
+    const r=new FileReader(); r.onload=()=>{
+      file={name:f.name, dataURL:r.result, isImage};
+      const pv=document.getElementById('nPrev'), nm=document.getElementById('nFName');
+      if(isImage){ pv.src=r.result; pv.style.display='block'; nm.textContent=''; } else { pv.style.display='none'; nm.textContent='📎 '+f.name; }
+    }; r.readAsDataURL(f);
+  };
+  document.getElementById('nSave').onclick=async ()=>{
+    const t=document.getElementById('nT').value.trim(), b=document.getElementById('nB').value.trim(); if(!t&&!b&&!file) return;
+    if(editing){ await dbUpd('notices', editId, {title:t||'(제목 없음)', body:b, file}); }
+    else { await dbAdd('notices', { region_id:curRegionId(), author_id:SESSION.id, author_name:SESSION.name, title:t||'(제목 없음)', body:b, file, comments:[] }); }
+    closeSheet(); render();
+  };
+}
+function openPray(editId){
+  const editing = editId ? byRegion('prayers').find(x=>x.id===editId) : null;
+  let scope = editing ? editing.scope : 'public';
+  const names = regionMemberNames();
+  const curWho = editing ? editing.who : session().name;
+  const authorPick = isLeader()
+    ? `<label>작성자</label><select id="pWho">${names.map(n=>`<option ${n===curWho?'selected':''}>${esc(n)}</option>`).join('')}</select>`
+    : '';
+  showSheet(`<h3>${editing?'기도제목 수정':'기도제목 나누기'}</h3>${authorPick}<label>공개 범위</label>
+    <div class="scope-pick"><button class="${scope==='public'?'on':''}" id="spPublic">🌿 전체공개</button><button class="${scope==='leader'?'on':''}" id="spLeader">🔒 구역장만</button><button class="${scope==='private'?'on':''}" id="spPrivate">🙈 비공개</button></div>
+    <label>내용</label><textarea id="pB" placeholder="나누고 싶은 기도제목">${editing?esc(editing.body):''}</textarea>
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="pSave">${editing?'수정':'나누기'}</button></div>`);
+  const set=s=>{ scope=s; document.getElementById('spPublic').classList.toggle('on',s==='public'); document.getElementById('spLeader').classList.toggle('on',s==='leader'); document.getElementById('spPrivate').classList.toggle('on',s==='private'); };
+  document.getElementById('spPublic').onclick=()=>set('public'); document.getElementById('spLeader').onclick=()=>set('leader'); document.getElementById('spPrivate').onclick=()=>set('private');
+  document.getElementById('pSave').onclick=async ()=>{
+    const b=document.getElementById('pB').value.trim(); if(!b) return;
+    const who = isLeader() ? document.getElementById('pWho').value : SESSION.name;
+    if(editing){ await dbUpd('prayers', editId, {body:b, scope, who}); }
+    else { await dbAdd('prayers', { region_id:curRegionId(), author_id:SESSION.id, who, scope, body:b, amens:[], comments:[] }); }
+    closeSheet(); render();
+  };
+}
+function openMeet(){
+  let photo=null;
+  const names=regionMemberNames();
+  const checks=names.map(n=>`<label class="cb"><input type="checkbox" class="att-pick" value="${esc(n)}"> ${esc(n)}</label>`).join('');
+  showSheet(`<h3>모임 기록</h3><label>주차</label><input id="mW" placeholder="예: 6월 셋째 주" />
+    <label>날짜</label><input id="mD" type="date" /><label>장소</label><input id="mP" placeholder="예: 김은혜 집사님 댁" />
+    <label>말씀 본문 (선택)</label><input id="mPas" placeholder="예: 요한복음 15:1-8" />
+    <label>참석자 (체크한 인원이 자동 집계돼요)</label><div class="att-list">${checks||'<span style="font-size:12.5px;color:var(--soft)">등록된 구역원이 없어요</span>'}</div>
+    <label>나눔 질문 (선택)</label><input id="mQ" placeholder="예: 이번 주 가장 감사한 일은?" />
+    <label>나눔 내용</label><textarea id="mB" placeholder="말씀·나눔·감사 제목"></textarea>
+    <label>사진 (선택)</label><input id="mPh" type="file" accept="image/*" /><img class="photo-prev" id="mPrev" alt="" />
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="mSave">저장</button></div>`);
+  document.getElementById('mPh').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ photo=r.result; const pv=document.getElementById('mPrev'); pv.src=photo; pv.style.display='block'; }; r.readAsDataURL(f); };
+  document.getElementById('mSave').onclick=async ()=>{
+    const w=document.getElementById('mW').value.trim(), d=document.getElementById('mD').value, p=document.getElementById('mP').value.trim(), b=document.getElementById('mB').value.trim();
+    const pas=document.getElementById('mPas').value.trim(), q=document.getElementById('mQ').value.trim();
+    const attendees=[...document.querySelectorAll('.att-pick:checked')].map(c=>c.value);
+    if(!w&&!b&&!pas) return;
+    await dbAdd('meetings', { region_id:curRegionId(), author_id:SESSION.id, week:w||'이번 주', date:d||new Date().toISOString().slice(0,10), place:p, passage:pas, question:q, attendees, body:b, photo });
+    closeSheet(); render();
+  };
+}
+function openPost(editId){
+  const editing = editId ? byRegion('posts').find(x=>x.id===editId) : null;
+  let file = editing && editing.file ? editing.file : null, kind = editing ? (editing.kind||'free') : 'free';
+  showSheet(`<h3>${editing?'글 수정':'글쓰기'}</h3><label>종류</label>
+    <div class="scope-pick"><button class="${kind==='free'?'on':''}" data-pk="free">자유</button><button class="${kind==='qt'?'on':''}" data-pk="qt">📖 묵상</button><button class="${kind==='thanks'?'on':''}" data-pk="thanks">🙏 감사</button></div>
+    <label>내용</label><textarea id="poB" placeholder="구역 식구들과 자유롭게 나눠요">${editing?esc(editing.body):''}</textarea>
+    <label>파일 첨부 (선택)</label><input id="poF" type="file" /><img class="photo-prev" id="poPrev" alt="" ${editing&&editing.file&&editing.file.isImage?`src="${editing.file.dataURL}" style="display:block"`:''} /><div id="poName" style="font-size:12px;color:var(--soft);margin-top:7px">${editing&&editing.file&&!editing.file.isImage?'📎 '+esc(editing.file.name):''}</div>
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="poSave">${editing?'수정':'올리기'}</button></div>`);
+  document.querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>{ kind=b.dataset.pk; document.querySelectorAll('[data-pk]').forEach(x=>x.classList.toggle('on',x===b)); });
+  document.getElementById('poF').onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const isImage=f.type.startsWith('image/');
+    const r=new FileReader(); r.onload=()=>{
+      file={name:f.name, dataURL:r.result, isImage};
+      const pv=document.getElementById('poPrev'), nm=document.getElementById('poName');
+      if(isImage){ pv.src=r.result; pv.style.display='block'; nm.textContent=''; } else { pv.style.display='none'; nm.textContent='📎 '+f.name; }
+    }; r.readAsDataURL(f);
+  };
+  document.getElementById('poSave').onclick=async ()=>{
+    const b=document.getElementById('poB').value.trim(); if(!b&&!file) return;
+    if(editing){ await dbUpd('posts', editId, {kind, body:b, file}); }
+    else { await dbAdd('posts', { region_id:curRegionId(), author_id:SESSION.id, author_name:SESSION.name, kind, body:b, file, comments:[] }); }
+    closeSheet(); render();
+  };
+}
+function openMember(forRegion){
+  const rid = forRegion || curRegionId();
+  let role='member';
+  const POSITIONS=['','성도','집사','권사','안수집사','장로','권찰','전도사','목사','선교사'];
+  const posOpt=POSITIONS.map(p=>`<option value="${p}">${p||'— 직분 없음 —'}</option>`).join('');
+  showSheet(`<h3>구역원 등록</h3><div class="desc">구역원이 로그인할 아이디·비밀번호도 함께 만듭니다.</div>
+    <label>이름</label><input id="meName" placeholder="이름" autocomplete="off" /><label>연락처 (선택)</label><input id="mePhone" placeholder="010-0000-0000" autocomplete="off" />
+    <label>생일 (선택 · 월-일)</label><input id="meBday" placeholder="예: 06-15" maxlength="5" autocomplete="off" />
+    <label>직분 (선택)</label><select id="mePos">${posOpt}</select>
+    <label>아이디</label><input id="meUser" placeholder="로그인 아이디" autocomplete="off" /><label>비밀번호</label><input id="mePw" placeholder="비밀번호" />
+    <label>역할</label><div class="scope-pick"><button class="on" id="mrMember">구역원</button><button id="mrLeader">구역장</button></div>
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="meSave">등록</button></div>`);
+  document.getElementById('mrMember').onclick=()=>{ role='member'; document.getElementById('mrMember').classList.add('on'); document.getElementById('mrLeader').classList.remove('on'); };
+  document.getElementById('mrLeader').onclick=()=>{ role='leader'; document.getElementById('mrLeader').classList.add('on'); document.getElementById('mrMember').classList.remove('on'); };
+  document.getElementById('meSave').onclick=async ()=>{
+    const n=document.getElementById('meName').value.trim(), u=document.getElementById('meUser').value.trim(), p=document.getElementById('mePw').value;
+    if(!n||!u||!p){ return; }
+    if(DB.profiles.find(a=>a.username===u.toLowerCase())){ alert('이미 쓰는 아이디예요.'); return; }
+    const btn=document.getElementById('meSave'); btn.disabled=true; btn.textContent='등록 중…';
+    try{
+      await createAccount({ username:u, password:p, name:n, role, regionId:rid, phone:document.getElementById('mePhone').value.trim(), birthday:document.getElementById('meBday').value.trim(), position:document.getElementById('mePos').value });
+      closeSheet(); render();
+    }catch(e){ alert('등록 실패: '+(e.message||e)); btn.disabled=false; btn.textContent='등록'; }
+  };
+}
+
+// ===== 시작 =====
+boot();
+</script>
+</body>
+</html>
