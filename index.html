@@ -51,13 +51,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:2px s
 .topbar{ position:sticky; top:0; z-index:20; background:var(--bg); border-bottom:1px solid var(--line); }
 .hdr{ padding:16px 22px; }
 .hdr-in{ width:100%; max-width:920px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
-.hdr .group{ display:flex; align-items:center; }
-.hdr .group .gwrap{ display:flex; flex-direction:column; }
-.hdr #groupName{ font-size:21px; font-weight:800; letter-spacing:-.5px; color:var(--ink); }
+.hdr .group{ display:flex; align-items:center; min-width:0; }
+.hdr .group .gwrap{ display:flex; flex-direction:column; min-width:0; }
+.hdr #groupName{ font-size:21px; font-weight:800; letter-spacing:-.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55vw; }
 .hdr .group small{ font-size:10.5px; font-weight:700; color:var(--accent); letter-spacing:.4px; margin-top:3px; text-transform:uppercase; }
 .hdr .edit-g{ background:none; border:none; color:var(--soft); font-size:12px; padding:3px 6px; border-radius:7px; cursor:pointer; margin-left:6px; }
 .hdr .edit-g:hover{ color:var(--accent); }
-.hdr .me{ display:flex; align-items:center; gap:9px; }
+.hdr .me{ display:flex; align-items:center; gap:9px; flex:none; }
 .hdr .me .nm{ font-size:14.5px; font-weight:600; color:var(--ink2); }
 .hdr .me .badge{ font-size:9.5px; font-weight:800; padding:3px 9px; border-radius:999px; letter-spacing:.3px; }
 .badge.leader{ background:var(--accent-soft); color:var(--accent-d); } .badge.super{ background:var(--ink); color:#fff; } .badge.member{ background:var(--line); color:var(--ink2); }
@@ -96,10 +96,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:2px s
 .notice .t{ font-weight:700; font-size:16.5px; color:var(--ink); }
 .notice .b{ font-size:15.5px; margin-top:8px; white-space:pre-wrap; color:var(--ink2); line-height:1.65; }
 .notice .d{ font-size:12.5px; color:var(--soft); margin-top:12px; }
-.notice img{ width:100%; border-radius:12px; margin-top:11px; display:block; }
+.notice img{ max-width:100%; height:auto; border-radius:12px; margin-top:11px; display:block; }
 .notice .d .admin-by{ font-weight:800; color:var(--accent-d); }
 
-.pray .top{ display:flex; align-items:center; gap:8px; }
+.pray .top{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .pray .who{ font-size:15.5px; font-weight:700; color:var(--ink); }
 .scope{ font-size:10px; font-weight:700; padding:3px 9px; border-radius:999px; letter-spacing:.2px; }
 .scope.public{ background:var(--ok-bg); color:var(--ok); }
@@ -108,13 +108,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:2px s
 .pray .b{ font-size:15.5px; margin-top:10px; white-space:pre-wrap; color:var(--ink2); line-height:1.65; }
 .pray .d{ font-size:12.5px; color:var(--soft); margin-top:11px; }
 
-.meeting .mt{ display:flex; align-items:baseline; justify-content:space-between; }
+.meeting .mt{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; }
 .meeting .wk{ font-size:16.5px; font-weight:800; color:var(--ink); letter-spacing:-.3px; }
 .meeting .dt{ font-size:13px; color:var(--soft); }
 .meeting .loc{ font-size:13.5px; color:var(--soft); margin-top:5px; }
 .meeting .b{ font-size:15.5px; margin-top:11px; white-space:pre-wrap; color:var(--ink2); line-height:1.65; }
 .meeting .att{ font-size:13px; color:var(--accent-d); margin-top:11px; font-weight:700; }
-.meeting img{ width:100%; border-radius:12px; margin-top:12px; display:block; }
+.meeting img{ max-width:100%; height:auto; border-radius:12px; margin-top:12px; display:block; }
 
 .member{ display:flex; align-items:center; gap:13px; }
 .member .av{ width:42px; height:42px; border-radius:13px; background:var(--accent-soft); color:var(--accent-d); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; flex:none; }
@@ -157,11 +157,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:2px s
 .mini-edit{ margin-left:auto; border:1px solid var(--line); background:none; color:var(--soft); font-family:inherit; font-size:11px; font-weight:700; padding:4px 10px; border-radius:8px; cursor:pointer; transition:.12s; }
 .mini-edit:hover{ border-color:var(--accent); color:var(--accent-d); }
 
-.post .p-top{ display:flex; align-items:center; justify-content:space-between; }
+.post .p-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
 .post .who{ font-size:15px; font-weight:700; color:var(--ink); }
 .post .d{ font-size:12.5px; color:var(--soft); }
 .post .b{ font-size:15.5px; margin-top:10px; white-space:pre-wrap; color:var(--ink2); line-height:1.65; }
-.post img{ width:100%; border-radius:12px; margin-top:12px; display:block; }
+.post img{ max-width:100%; height:auto; border-radius:12px; margin-top:12px; display:block; }
 .file-link{ display:inline-block; margin-top:12px; font-size:13px; font-weight:600; color:var(--accent-d); background:var(--accent-soft); padding:8px 14px; border-radius:10px; text-decoration:none; }
 
 .att-list{ display:flex; flex-wrap:wrap; gap:8px; }
