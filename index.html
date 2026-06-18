@@ -44,7 +44,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:2px s
 .demo-accts b{ color:var(--ink2); }
 .demo-accts code{ background:var(--accent-soft); padding:1px 6px; border-radius:5px; font-size:11px; color:var(--accent-d); }
 .login-help{ font-size:12.5px; color:var(--soft); margin-top:18px; }
-.pos-badge{ font-size:11px; color:var(--accent-d); font-weight:700; background:var(--accent-soft); padding:1px 7px; border-radius:999px; margin-left:5px; }
+.pos-badge{ font-size:11px; color:var(--accent-d); font-weight:700; background:var(--accent-soft); padding:1px 7px; border-radius:999px; margin-left:5px; white-space:nowrap; display:inline-block; }
 .emblem img{ width:100%; height:100%; object-fit:cover; border-radius:15px; }
 .hdr-logo{ width:34px; height:34px; border-radius:9px; object-fit:cover; margin-right:10px; flex:none; }
 .logo-prev{ width:88px; height:88px; border-radius:20px; background:var(--accent-soft); display:inline-flex; align-items:center; justify-content:center; font-size:38px; overflow:hidden; }
@@ -120,12 +120,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:2px s
 .meeting .att{ font-size:13px; color:var(--accent-d); margin-top:11px; font-weight:700; }
 .meeting img{ max-width:100%; height:auto; border-radius:12px; margin-top:12px; display:block; }
 
-.member{ display:flex; align-items:center; gap:13px; }
+.member{ display:flex; align-items:center; gap:13px; flex-wrap:wrap; }
 .member .av{ width:42px; height:42px; border-radius:13px; background:var(--accent-soft); color:var(--accent-d); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; flex:none; }
 .member .nm{ font-size:16px; font-weight:700; color:var(--ink); }
 .member .ph{ font-size:13.5px; color:var(--soft); margin-top:2px; }
 .member .role{ margin-left:auto; font-size:10px; font-weight:800; padding:3px 10px; border-radius:999px; background:var(--accent-soft); color:var(--accent-d); letter-spacing:.2px; }
-.mini-del{ margin-left:auto; border:1px solid var(--line); background:none; color:var(--warn); font-family:inherit; font-size:11px; font-weight:700; padding:4px 11px; border-radius:8px; cursor:pointer; transition:.12s; }
+.mini-del{ margin-left:auto; border:1px solid var(--line); background:none; color:var(--warn); font-family:inherit; font-size:11px; font-weight:700; padding:4px 11px; border-radius:8px; cursor:pointer; transition:.12s; white-space:nowrap; }
 .mini-del:hover{ border-color:var(--warn); background:#F6ECE7; }
 
 .region-card{ display:flex; align-items:center; gap:14px; }
@@ -255,7 +255,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:2px s
 .care-item{ background:var(--bg2); border:1px solid var(--line); border-radius:11px; padding:11px 13px; margin-bottom:8px; }
 .care-item .cbd{ font-size:13px; color:var(--ink2); white-space:pre-wrap; line-height:1.6; }
 .care-item .cd{ font-size:11px; color:var(--soft); margin-top:6px; }
-.mini-care{ border:1px solid var(--line); background:none; color:var(--accent-d); font-family:inherit; font-size:11px; font-weight:700; padding:4px 11px; border-radius:8px; cursor:pointer; }
+.mini-care{ border:1px solid var(--line); background:none; color:var(--accent-d); font-family:inherit; font-size:11px; font-weight:700; padding:4px 11px; border-radius:8px; cursor:pointer; white-space:nowrap; }
 .mini-care:hover{ border-color:var(--accent); background:var(--accent-soft); }
 .member .m-act{ margin-left:auto; display:flex; gap:6px; align-items:center; flex:none; }
 .backup-row{ display:flex; gap:8px; margin-top:10px; }
