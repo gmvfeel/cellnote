@@ -45,6 +45,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:2px s
 .demo-accts code{ background:var(--accent-soft); padding:1px 6px; border-radius:5px; font-size:11px; color:var(--accent-d); }
 .login-help{ font-size:12.5px; color:var(--soft); margin-top:18px; }
 .pos-badge{ font-size:11px; color:var(--accent-d); font-weight:700; background:var(--accent-soft); padding:1px 7px; border-radius:999px; margin-left:5px; }
+.emblem img{ width:100%; height:100%; object-fit:cover; border-radius:15px; }
+.hdr-logo{ width:34px; height:34px; border-radius:9px; object-fit:cover; margin-right:10px; flex:none; }
+.logo-prev{ width:88px; height:88px; border-radius:20px; background:var(--accent-soft); display:inline-flex; align-items:center; justify-content:center; font-size:38px; overflow:hidden; }
+.logo-prev img{ width:100%; height:100%; object-fit:cover; }
 
 /* ===== 레이아웃 ===== */
 .app{ min-height:100vh; background:var(--bg); padding-bottom:76px; }
@@ -69,12 +73,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:2px s
 .topnav button{ border:none; background:none; font-family:inherit; font-size:15px; font-weight:600; color:var(--soft); cursor:pointer; padding:15px 18px; border-bottom:2px solid transparent; display:flex; align-items:center; gap:7px; white-space:nowrap; transition:color .12s; }
 .topnav button:hover{ color:var(--ink); }
 .topnav button.on{ color:var(--accent-d); border-bottom-color:var(--accent); font-weight:700; }
-.topnav .ic{ font-size:17px; }
+.topnav .ic{ width:18px; height:18px; }
 
 /* 모바일 하단 탭바 */
 .tabbar{ position:fixed; bottom:0; left:0; right:0; z-index:30; background:var(--bg2); border-top:1px solid var(--line); display:flex; padding-bottom:env(safe-area-inset-bottom); }
 .tabbar button{ flex:1; border:none; background:none; padding:11px 0 13px; font-family:inherit; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:5px; color:var(--soft); transition:color .12s; }
-.tabbar button .ic{ font-size:25px; line-height:1; }
+.tabbar button .ic{ width:23px; height:23px; }
 .tabbar button .tb-l{ font-size:12px; font-weight:600; }
 .tabbar button.on{ color:var(--accent-d); }
 .tabbar button.on .tb-l{ font-weight:700; }
@@ -340,8 +344,13 @@ async function loadAll(){
 }
 
 // ===== 부팅 =====
+let APP_LOGO=null;
+async function loadLogo(){
+  try{ const {data}=await sb.from('app_config').select('logo').eq('id','main').maybeSingle(); APP_LOGO=(data&&data.logo)?data.logo:null; }catch(e){ APP_LOGO=null; }
+}
 async function boot(){
   applyTheme(theme);
+  await loadLogo();
   const {data:{session:sess}}=await sb.auth.getSession();
   if(!sess){ SESSION=null; render(); return; }
   await startApp(sess.user.id);
@@ -400,7 +409,7 @@ function render(){
 function loginView(){
   return `<div class="login">
     <div class="login-card">
-      <div class="emblem">🌿</div>
+      <div class="emblem">${APP_LOGO?`<img src="${APP_LOGO}" alt="로고">`:'🌿'}</div>
       <div class="logo">구역<span class="leaf">노트</span></div>
       <div class="tag">우리 구역, 함께 기도하고 기록해요</div>
       <div class="field"><label>아이디</label><input id="lgUser" placeholder="아이디" autocomplete="username" autocapitalize="off" /></div>
@@ -429,7 +438,7 @@ function bindLogin(){
 function superHeader(){
   const m=session();
   return `<div class="hdr"><div class="hdr-in">
-    <div class="group"><div class="gwrap"><span class="serif" style="font-size:18px;font-weight:800">구역 관리</span><small>구역노트 🌿 · 슈퍼바이저</small></div></div>
+    <div class="group">${APP_LOGO?`<img class="hdr-logo" src="${APP_LOGO}" alt="">`:''}<div class="gwrap"><span class="serif" style="font-size:18px;font-weight:800">구역 관리</span><small>구역노트 🌿 · 슈퍼바이저</small></div></div>
     <div class="me"><span class="nm">${esc(m.name)}</span><span class="badge super">슈퍼바이저</span>${themeBtn()}<button class="out" id="logout">나가기</button></div>
   </div></div>`;
 }
@@ -455,7 +464,7 @@ function superView(){
   }).join('');
   const bc=store.get('broadcasts',[]).slice().sort((a,b)=>b.time-a.time);
   const bcHTML=bc.length?`<div class="sec-t" style="margin-top:26px">보낸 전체 공지</div><div class="list">`+bc.map(x=>`<div class="card notice"><div class="t">${esc(x.title)}</div><div class="b">${esc(x.body)}</div><div class="d">전체 발송 · ${fmt(x.time)} <button class="mini-edit" data-ebc="${x.id}">수정</button><button class="mini-del" data-dbc="${x.id}">삭제</button></div></div>`).join('')+`</div>`:'';
-  return `${kpi}<div class="sec-t">전체 구역 <span class="adm-acts"><button class="add-btn ghost" id="broadcast">📢 전체 공지</button><button class="add-btn" id="addRegion">+ 구역 생성</button></span></div>
+  return `${kpi}<div class="sec-t">전체 구역 <span class="adm-acts"><button class="add-btn ghost" id="setLogo">🖼 로고</button><button class="add-btn ghost" id="broadcast">📢 전체 공지</button><button class="add-btn" id="addRegion">+ 구역 생성</button></span></div>
     ${regions.length?`<div class="list">${cards}</div>`:'<div class="empty">아직 생성된 구역이 없어요.\n+ 구역 생성으로 첫 구역을 만들어보세요.</div>'}${bcHTML}`;
 }
 function superDetail(rid){
@@ -494,6 +503,7 @@ function bindSuper(){
   const tt=document.getElementById('themeToggle'); if(tt) tt.onclick=toggleTheme;
   const ar=document.getElementById('addRegion'); if(ar) ar.onclick=openRegion;
   const bc=document.getElementById('broadcast'); if(bc) bc.onclick=()=>openBroadcast();
+  const sl=document.getElementById('setLogo'); if(sl) sl.onclick=()=>openLogo();
   document.querySelectorAll('[data-ebc]').forEach(b=>b.onclick=()=>openBroadcast(b.dataset.ebc));
   document.querySelectorAll('[data-dbc]').forEach(b=>b.onclick=()=>delItem('broadcasts',b.dataset.dbc));
   const bk=document.getElementById('admBack'); if(bk) bk.onclick=()=>{ admView='list'; admRegion=null; render(); };
@@ -531,6 +541,31 @@ function openChangeLeader(rid){
     const btn=document.getElementById('clSave'); btn.disabled=true; btn.textContent='지정 중…';
     try{ await createAccount({username:u, password:p, name:n, role:'leader', regionId:rid}); closeSheet(); render(); }
     catch(e){ alert('지정 실패: '+(e.message||e)); btn.disabled=false; btn.textContent='지정'; }
+  };
+}
+function openLogo(){
+  let dataUrl=null;
+  showSheet(`<h3>교회 로고 설정</h3><div class="desc">로그인 화면과 앱 상단에 표시돼요. 정사각형 이미지가 가장 잘 어울려요.</div>
+    <div style="text-align:center;margin:16px 0"><div class="logo-prev" id="logoPrev">${APP_LOGO?`<img src="${APP_LOGO}" alt="">`:'🌿'}</div></div>
+    <label>이미지 선택</label><input id="logoF" type="file" accept="image/*" />
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button>${APP_LOGO?'<button class="cancel" id="logoDel">로고 삭제</button>':''}<button class="save" id="logoSave" disabled>저장</button></div>`);
+  document.getElementById('logoF').onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader(); r.onload=()=>{ dataUrl=r.result; document.getElementById('logoPrev').innerHTML=`<img src="${dataUrl}" alt="">`; document.getElementById('logoSave').disabled=false; }; r.readAsDataURL(f);
+  };
+  document.getElementById('logoSave').onclick=async ()=>{
+    if(!dataUrl) return;
+    const btn=document.getElementById('logoSave'); btn.disabled=true; btn.textContent='저장 중…';
+    const {error}=await sb.from('app_config').upsert({id:'main',logo:dataUrl,updated_at:new Date().toISOString()});
+    if(error){ alert('저장 실패: '+error.message); btn.disabled=false; btn.textContent='저장'; return; }
+    APP_LOGO=dataUrl; closeSheet(); render();
+  };
+  const del=document.getElementById('logoDel');
+  if(del) del.onclick=async ()=>{
+    if(!confirm('로고를 삭제하고 기본 아이콘으로 되돌릴까요?')) return;
+    const {error}=await sb.from('app_config').upsert({id:'main',logo:null,updated_at:new Date().toISOString()});
+    if(error){ alert('삭제 실패: '+error.message); return; }
+    APP_LOGO=null; closeSheet(); render();
   };
 }
 function openBroadcast(editId){
@@ -573,11 +608,19 @@ function header(){
   const m=session();
   const roleBadge = m.role==='leader'?'<span class="badge leader">구역장</span>':'<span class="badge member">구역원</span>';
   return `<div class="hdr"><div class="hdr-in">
-    <div class="group"><div class="gwrap"><span id="groupName">${esc(regionName())}</span><small>구역노트 🌿</small></div>${isLeader()?'<button class="edit-g" id="editGroup" title="구역 이름 수정">✏️</button>':''}</div>
+    <div class="group">${APP_LOGO?`<img class="hdr-logo" src="${APP_LOGO}" alt="">`:''}<div class="gwrap"><span id="groupName">${esc(regionName())}</span><small>구역노트 🌿</small></div>${isLeader()?'<button class="edit-g" id="editGroup" title="구역 이름 수정">✏️</button>':''}</div>
     <div class="me"><span class="nm">${esc(m.name)}</span>${roleBadge}${themeBtn()}<button class="out" id="logout">나가기</button></div>
   </div></div>`;
 }
-const NAV=[['home','🏠','홈'],['pray','🙏','기도제목'],['meet','📖','모임기록'],['board','💬','게시판'],['member','👥','구역원']];
+const NAV=[['home','홈'],['pray','기도제목'],['meet','모임기록'],['board','게시판'],['member','구역원']];
+const ICONS={
+  home:'<path d="M3 10.8 12 3.5l9 7.3"/><path d="M5.2 9.4V20.5h13.6V9.4"/><path d="M9.6 20.5v-6.2h4.8v6.2"/>',
+  pray:'<path d="M12 20.3 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9A4.6 4.6 0 1 1 19.4 13z"/>',
+  meet:'<path d="M12 6.6C10.4 5.3 7.8 4.7 4 5.4v12.8c3.8-.7 6.4-.1 8 1.4"/><path d="M12 6.6c1.6-1.3 4.2-1.9 8-1.2v12.8c-3.8-.7-6.4-.1-8 1.4"/><path d="M12 6.6v13"/>',
+  board:'<path d="M20.5 12c0 4.2-3.8 7.5-8.5 7.5-1.3 0-2.6-.3-3.7-.8L4 20l1.3-3.7C4.5 15.1 3.5 13.7 3.5 12 3.5 7.8 7.3 4.5 12 4.5s8.5 3.3 8.5 7.5z"/>',
+  member:'<circle cx="9" cy="8.2" r="3"/><path d="M3.8 19a5.2 5.2 0 0 1 10.4 0"/><path d="M16.2 5.4a3 3 0 0 1 0 5.6"/><path d="M17 13.4a5.2 5.2 0 0 1 3.7 5.3"/>'
+};
+function svgIcon(k){ return `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]||''}</svg>`; }
 function regionMemberNames(){ return store.get('accounts',[]).filter(a=>a.regionId===curRegionId()&&(a.role==='leader'||a.role==='member')).map(a=>a.name); }
 function noticeBy(by){ return (by==='운영자'||by==='플랫폼 총괄관리자') ? '<b class="admin-by">플랫폼 총괄관리자</b>' : esc(by); }
 function commentsHTML(type, item){
@@ -585,8 +628,8 @@ function commentsHTML(type, item){
   const lines=cs.map(c=>`<div class="cmt"><b>${esc(c.by)}</b> ${esc(c.body)} <span class="ct">${fmt(c.time)}</span></div>`).join('');
   return `<div class="comments">${lines}<div class="cmt-add"><input class="cmt-in" id="ci_${type}_${item.id}" placeholder="댓글 달기" /><button class="cmt-btn" data-type="${type}" data-id="${item.id}">등록</button></div></div>`;
 }
-function topnav(){ return `<nav class="topnav">${NAV.map(([k,ic,l])=>`<button data-t="${k}" class="${tab===k?'on':''}"><span class="ic">${ic}</span>${l}</button>`).join('')}</nav>`; }
-function tabbar(){ return `<nav class="tabbar">${NAV.map(([k,ic,l])=>`<button data-t="${k}" class="${tab===k?'on':''}"><span class="ic">${ic}</span><span class="tb-l">${l}</span></button>`).join('')}</nav>`; }
+function topnav(){ return `<nav class="topnav">${NAV.map(([k,l])=>`<button data-t="${k}" class="${tab===k?'on':''}">${svgIcon(k)}${l}</button>`).join('')}</nav>`; }
+function tabbar(){ return `<nav class="tabbar">${NAV.map(([k,l])=>`<button data-t="${k}" class="${tab===k?'on':''}">${svgIcon(k)}<span class="tb-l">${l}</span></button>`).join('')}</nav>`; }
 
 // ===== 화면들 =====
 function homeView(){
