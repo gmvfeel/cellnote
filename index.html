@@ -598,7 +598,7 @@ function homeView(){
   if(nm){
     const dd=ddayText(nm.date);
     const duty=(nm.snackDuty||nm.leadDuty)?`<div class="nm-duty">${nm.leadDuty?`인도 <b>${esc(nm.leadDuty)}</b>`:''}${(nm.leadDuty&&nm.snackDuty)?' · ':''}${nm.snackDuty?`간식 <b>${esc(nm.snackDuty)}</b>`:''}</div>`:'';
-    nmHTML=`<div class="next-meet">${isLeader()?'<button class="nm-edit" id="editNextMeet">수정</button>':''}<div class="nm-lab">📅 다음 모임</div><div class="nm-when">${esc(nm.date)}${nm.time?' · '+esc(nm.time):''}${dd?`<span class="dday">${dd}</span>`:''}</div>${nm.place?`<div class="nm-where">📍 ${esc(nm.place)}</div>`:''}${duty}${nm.note?`<div class="nm-note">${esc(nm.note)}</div>`:''}</div>`;
+    nmHTML=`<div class="next-meet">${isLeader()?'<span style="float:right;display:flex;gap:6px"><button class="nm-edit" id="editNextMeet" style="float:none">수정</button><button class="nm-edit" id="delNextMeet" style="float:none">삭제</button></span>':''}<div class="nm-lab">📅 다음 모임</div><div class="nm-when">${esc(nm.date)}${nm.time?' · '+esc(nm.time):''}${dd?`<span class="dday">${dd}</span>`:''}</div>${nm.place?`<div class="nm-where">📍 ${esc(nm.place)}</div>`:''}${duty}${nm.note?`<div class="nm-note">${esc(nm.note)}</div>`:''}</div>`;
   } else if(isLeader()){
     nmHTML=`<div class="next-meet empty-nm">아직 등록된 다음 모임이 없어요. <button class="nm-edit" id="editNextMeet" style="float:none;margin-left:4px">+ 다음 모임 정하기</button></div>`;
   }
@@ -652,7 +652,7 @@ function meetView(){
   const gallery=(galOpen&&photos.length)?`<div class="gallery">${photos.map(x=>`<img src="${x.photo}" alt="모임 사진" />`).join('')}</div>`:'';
   const list=ms.length?`<div class="list">`+ms.map(x=>{
     const canEd=(x.author_id===session().id||isLeader());
-    return `<div class="card meeting"><div class="mt"><span class="wk">${esc(x.week)}</span><span class="dt">${esc(x.date)}${canEd?` <button class="mini-del" data-dmt="${x.id}">삭제</button>`:''}</span></div><div class="loc">📍 ${esc(x.place)}</div>${x.passage?`<div class="passage">📖 ${esc(x.passage)}</div>`:''}${x.question?`<div class="question">💬 ${esc(x.question)}</div>`:''}${x.body?`<div class="b">${esc(x.body)}</div>`:''}${(x.attendees&&x.attendees.length)?`<div class="att">참석 ${x.attendees.length}명 · ${x.attendees.map(esc).join(', ')}</div>`:(x.attend?`<div class="att">참석 ${esc(x.attend)}</div>`:'')}${x.photo?`<img src="${x.photo}" alt="모임 사진" />`:''}</div>`;
+    return `<div class="card meeting"><div class="mt"><span class="wk">${esc(x.week)}</span><span class="dt">${esc(x.date)}${canEd?` <button class="mini-edit" data-emt="${x.id}">수정</button><button class="mini-del" data-dmt="${x.id}">삭제</button>`:''}</span></div><div class="loc">📍 ${esc(x.place)}</div>${x.passage?`<div class="passage">📖 ${esc(x.passage)}</div>`:''}${x.question?`<div class="question">💬 ${esc(x.question)}</div>`:''}${x.body?`<div class="b">${esc(x.body)}</div>`:''}${(x.attendees&&x.attendees.length)?`<div class="att">참석 ${x.attendees.length}명 · ${x.attendees.map(esc).join(', ')}</div>`:(x.attend?`<div class="att">참석 ${esc(x.attend)}</div>`:'')}${x.photo?`<img src="${x.photo}" alt="모임 사진" />`:''}</div>`;
   }).join('')+`</div>`
     :`<div class="empty">아직 모임 기록이 없어요.${isLeader()?'\n+ 기록으로 이번 주 모임을 남겨보세요.':''}</div>`;
   return `<div class="sec-t">모임 기록 ${isLeader()?'<button class="add-btn" id="addMeet">+ 기록</button>':''}</div>${stats}${galBtn}${gallery}${list}`;
@@ -664,8 +664,9 @@ function memberView(){
     const phoneHTML=m.phone?`<div class="ph">${esc(m.phone)}</div><div class="ph-actions"><a class="ph-link" href="tel:${pc(m.phone)}">📞 전화</a><a class="ph-link" href="sms:${pc(m.phone)}">💬 문자</a></div>`:'';
     const roleBadge=m.role==='leader'?'<span class="role">구역장</span>':'';
     const careBtn=isLeader()?`<button class="mini-care" data-care="${esc(m.name)}">돌봄</button>`:'';
+    const editBtn=isLeader()?`<button class="mini-care" data-em="${m.id}">수정</button>`:'';
     const delBtn=(m.role!=='leader'&&isLeader())?`<button class="mini-del" data-delm="${m.id}">삭제</button>`:'';
-    return `<div class="card member"><div class="av">${esc(m.name.slice(0,1))}</div><div style="flex:1;min-width:0"><div class="nm">${esc(m.name)}${m.position?` <span class="pos-badge">${esc(m.position)}</span>`:''}</div>${phoneHTML}${m.birthday?`<div class="bd">🎂 ${esc(m.birthday)}</div>`:''}</div><div class="m-act">${roleBadge}${careBtn}${delBtn}</div></div>`;
+    return `<div class="card member"><div class="av">${esc(m.name.slice(0,1))}</div><div style="flex:1;min-width:0"><div class="nm">${esc(m.name)}${m.position?` <span class="pos-badge">${esc(m.position)}</span>`:''}</div>${phoneHTML}${m.birthday?`<div class="bd">🎂 ${esc(m.birthday)}</div>`:''}</div><div class="m-act">${roleBadge}${editBtn}${careBtn}${delBtn}</div></div>`;
   }).join('')+`</div>`;
   return `<div class="sec-t">구역원 <span style="font-size:12px;color:var(--soft);font-weight:600">${ms.length}명</span> ${isLeader()?'<button class="add-btn" id="addMember">+ 등록</button>':''}</div>${list}`;
 }
@@ -696,6 +697,7 @@ function bindScreen(){
   const on=(id,fn)=>{ const e=document.getElementById(id); if(e) e.onclick=fn; };
   on('addNotice',()=>openNotice()); on('addPray',()=>openPray()); on('addMeet',openMeet); on('addMember',()=>openMember()); on('addPost',()=>openPost());
   on('editNextMeet',openNextMeeting);
+  on('delNextMeet',()=>delNextMeeting());
   on('goPray',()=>{ tab='pray'; render(); });
   on('galToggle',()=>{ galOpen=!galOpen; render(); });
   document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openPray(b.dataset.edit));
@@ -705,6 +707,8 @@ function bindScreen(){
   document.querySelectorAll('[data-dp]').forEach(b=>b.onclick=()=>delItem('posts',b.dataset.dp));
   document.querySelectorAll('[data-dpr]').forEach(b=>b.onclick=()=>delItem('prayers',b.dataset.dpr));
   document.querySelectorAll('[data-dmt]').forEach(b=>b.onclick=()=>delItem('meetings',b.dataset.dmt));
+  document.querySelectorAll('[data-em]').forEach(b=>b.onclick=()=>editMember(b.dataset.em));
+  document.querySelectorAll('[data-emt]').forEach(b=>b.onclick=()=>openMeet(b.dataset.emt));
   document.querySelectorAll('[data-delm]').forEach(b=>b.onclick=()=>delMember(b.dataset.delm));
   document.querySelectorAll('[data-amen]').forEach(b=>b.onclick=()=>togglePrayerAmen(b.dataset.amen));
   document.querySelectorAll('[data-ans]').forEach(b=>b.onclick=()=>openAnswer(b.dataset.ans));
@@ -746,6 +750,14 @@ function openAnswer(id){
   const cl=document.getElementById('ansClear'); if(cl) cl.onclick=async ()=>{
     await dbUpd('prayers', id, {answered:false, testimony:''}); closeSheet(); render();
   };
+}
+async function delNextMeeting(){
+  if(!confirm('다음 모임 안내를 지울까요?')) return;
+  const rid=curRegionId();
+  const {error}=await sb.from('next_meetings').delete().eq('region_id',rid);
+  if(error){ alert('삭제 실패: '+error.message); return; }
+  DB.next_meetings=DB.next_meetings.filter(x=>x.regionId!==rid);
+  render();
 }
 function openNextMeeting(){
   const arr=store.get('nextMeetings',[]); const cur=arr.find(x=>x.regionId===curRegionId())||{};
@@ -856,25 +868,28 @@ function openPray(editId){
     closeSheet(); render();
   };
 }
-function openMeet(){
-  let photo=null;
+function openMeet(editId){
+  const editing = editId ? byRegion('meetings').find(x=>x.id===editId) : null;
+  let photo = editing && editing.photo ? editing.photo : null;
   const names=regionMemberNames();
-  const checks=names.map(n=>`<label class="cb"><input type="checkbox" class="att-pick" value="${esc(n)}"> ${esc(n)}</label>`).join('');
-  showSheet(`<h3>모임 기록</h3><label>주차</label><input id="mW" placeholder="예: 6월 셋째 주" />
-    <label>날짜</label><input id="mD" type="date" /><label>장소</label><input id="mP" placeholder="예: 김은혜 집사님 댁" />
-    <label>말씀 본문 (선택)</label><input id="mPas" placeholder="예: 요한복음 15:1-8" />
+  const att = editing && editing.attendees ? editing.attendees : [];
+  const checks=names.map(n=>`<label class="cb"><input type="checkbox" class="att-pick" value="${esc(n)}" ${att.includes(n)?'checked':''}> ${esc(n)}</label>`).join('');
+  showSheet(`<h3>${editing?'모임 기록 수정':'모임 기록'}</h3><label>주차</label><input id="mW" placeholder="예: 6월 셋째 주" value="${editing?esc(editing.week):''}" />
+    <label>날짜</label><input id="mD" type="date" value="${editing?esc(editing.date||''):''}" /><label>장소</label><input id="mP" placeholder="예: 김은혜 집사님 댁" value="${editing?esc(editing.place||''):''}" />
+    <label>말씀 본문 (선택)</label><input id="mPas" placeholder="예: 요한복음 15:1-8" value="${editing?esc(editing.passage||''):''}" />
     <label>참석자 (체크한 인원이 자동 집계돼요)</label><div class="att-list">${checks||'<span style="font-size:12.5px;color:var(--soft)">등록된 구역원이 없어요</span>'}</div>
-    <label>나눔 질문 (선택)</label><input id="mQ" placeholder="예: 이번 주 가장 감사한 일은?" />
-    <label>나눔 내용</label><textarea id="mB" placeholder="말씀·나눔·감사 제목"></textarea>
-    <label>사진 (선택)</label><input id="mPh" type="file" accept="image/*" /><img class="photo-prev" id="mPrev" alt="" />
-    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="mSave">저장</button></div>`);
+    <label>나눔 질문 (선택)</label><input id="mQ" placeholder="예: 이번 주 가장 감사한 일은?" value="${editing?esc(editing.question||''):''}" />
+    <label>나눔 내용</label><textarea id="mB" placeholder="말씀·나눔·감사 제목">${editing?esc(editing.body||''):''}</textarea>
+    <label>사진 (선택)</label><input id="mPh" type="file" accept="image/*" /><img class="photo-prev" id="mPrev" alt="" ${editing&&editing.photo?`src="${editing.photo}" style="display:block"`:''} />
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="mSave">${editing?'수정':'저장'}</button></div>`);
   document.getElementById('mPh').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ photo=r.result; const pv=document.getElementById('mPrev'); pv.src=photo; pv.style.display='block'; }; r.readAsDataURL(f); };
   document.getElementById('mSave').onclick=async ()=>{
     const w=document.getElementById('mW').value.trim(), d=document.getElementById('mD').value, p=document.getElementById('mP').value.trim(), b=document.getElementById('mB').value.trim();
     const pas=document.getElementById('mPas').value.trim(), q=document.getElementById('mQ').value.trim();
     const attendees=[...document.querySelectorAll('.att-pick:checked')].map(c=>c.value);
     if(!w&&!b&&!pas) return;
-    await dbAdd('meetings', { region_id:curRegionId(), author_id:SESSION.id, week:w||'이번 주', date:d||new Date().toISOString().slice(0,10), place:p, passage:pas, question:q, attendees, body:b, photo });
+    if(editing){ await dbUpd('meetings', editId, { week:w||'이번 주', date:d||editing.date, place:p, passage:pas, question:q, attendees, body:b, photo }); }
+    else { await dbAdd('meetings', { region_id:curRegionId(), author_id:SESSION.id, week:w||'이번 주', date:d||new Date().toISOString().slice(0,10), place:p, passage:pas, question:q, attendees, body:b, photo }); }
     closeSheet(); render();
   };
 }
@@ -901,6 +916,23 @@ function openPost(editId){
     if(editing){ await dbUpd('posts', editId, {kind, body:b, file}); }
     else { await dbAdd('posts', { region_id:curRegionId(), author_id:SESSION.id, author_name:SESSION.name, kind, body:b, file, comments:[] }); }
     closeSheet(); render();
+  };
+}
+function editMember(id){
+  const m=DB.profiles.find(x=>x.id===id); if(!m) return;
+  const POSITIONS=['','성도','집사','권사','안수집사','장로','권찰','전도사','목사','선교사'];
+  const posOpt=POSITIONS.map(p=>`<option value="${p}" ${(m.position||'')===p?'selected':''}>${p||'— 직분 없음 —'}</option>`).join('');
+  showSheet(`<h3>구역원 정보 수정</h3><div class="desc">${esc(m.name)}${m.username?' · 아이디 '+esc(m.username):''} (아이디·비밀번호는 바꿀 수 없어요)</div>
+    <label>이름</label><input id="emName" value="${esc(m.name)}" autocomplete="off" />
+    <label>연락처</label><input id="emPhone" value="${esc(m.phone||'')}" placeholder="010-0000-0000" autocomplete="off" />
+    <label>생일 (월-일)</label><input id="emBday" value="${esc(m.birthday||'')}" placeholder="예: 06-15" maxlength="5" autocomplete="off" />
+    <label>직분</label><select id="emPos">${posOpt}</select>
+    <div class="sheet-actions"><button class="cancel" onclick="closeSheet()">취소</button><button class="save" id="emSave">저장</button></div>`);
+  document.getElementById('emSave').onclick=async ()=>{
+    const n=document.getElementById('emName').value.trim(); if(!n) return;
+    const btn=document.getElementById('emSave'); btn.disabled=true; btn.textContent='저장 중…';
+    const ok=await dbUpd('profiles', id, { name:n, phone:document.getElementById('emPhone').value.trim(), birthday:document.getElementById('emBday').value.trim(), position:document.getElementById('emPos').value });
+    if(ok){ closeSheet(); render(); } else { btn.disabled=false; btn.textContent='저장'; }
   };
 }
 function openMember(forRegion){
