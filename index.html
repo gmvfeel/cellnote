@@ -847,7 +847,13 @@ async function delItem(table, id){
 // ===== 모달 =====
 function showSheet(html){ document.getElementById('sheet').innerHTML=html; document.getElementById('overlay').classList.remove('hidden'); }
 function closeSheet(){ document.getElementById('overlay').classList.add('hidden'); }
-document.getElementById('overlay').onclick=e=>{ if(e.target.id==='overlay') closeSheet(); };
+(function(){
+  const _ov = document.getElementById('overlay');
+  let _downOnOverlay = false;
+  // 배경을 "눌렀다가 같은 배경에서 뗀" 경우에만 닫기 (입력칸 글자 드래그 중 닫힘 방지)
+  _ov.addEventListener('mousedown', e => { _downOnOverlay = (e.target.id === 'overlay'); });
+  _ov.addEventListener('mouseup', e => { if(_downOnOverlay && e.target.id === 'overlay') closeSheet(); _downOnOverlay = false; });
+})();
 
 function openRegionName(rid){
   const r=DB.regions.find(x=>x.id===rid); if(!r) return;
